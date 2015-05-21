@@ -8,8 +8,23 @@
 * gcc -o echos echos.c -O2 -g -m32 -Wall -Werror
 */
 
+// Bibliotheken, die immer empfehlenswert sind
+#include <stdio.h>
 #include <stdlib.h>
+
+// Spezielle Socket Bibliotheken
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <netdb.h>
+#include <unistd.h>
+
+
+// Eigene Module
 #include "handleclient.h"
+
+static int accept_clients(int sd);
 
 int main(int argc, char **argv)
 {
@@ -20,7 +35,7 @@ int main(int argc, char **argv)
 	
 	// Liefert einen socket zurück (Fehlerbehandlung für sd < 0 möglich)
 	// sd ist ein Filedescriptor
-	int sd = passive_tcp(port);
+	int sd = passive_TCP(port);
 	
 	if (sd < 0)
 	{

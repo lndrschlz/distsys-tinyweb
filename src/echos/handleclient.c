@@ -2,6 +2,7 @@
 * Modul handleclient für Beispielprogramm echos.c von Hr. Reutemann
 * Tafelabschrieb - 21.05.2015
 */
+#include <unistd.h>	
 
 #define BUFSIZE 1000
 
