@@ -3,6 +3,7 @@
 * Tafelabschrieb - 21.05.2015
 */
 #include <unistd.h>	
+#include <stdio.h>
 
 #define BUFSIZE 1000
 

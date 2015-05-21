@@ -1,11 +1,7 @@
 /* 
-* Beispielprogramm von Hr. Reutemann
-* 21.05.2015 - Tafelabschrieb 
-*
-* Komplilieren:
-* make echos
-* ODER:
-* gcc -o echos echos.c -O2 -g -m32 -Wall -Werror
+FILE-O-RES
+LABORÜBUNG 1
+Schulz, Reutebuch, Polkehn
 */
 
 // Bibliotheken, die immer empfehlenswert sind
@@ -20,20 +16,21 @@
 #include <netdb.h>
 #include <unistd.h>
 
+#include <sys/stat.h>
+#include <fcntl.h>
 
-// Eigene Module
-#include "handleclient.h"
 
-static int accept_clients(int sd);
+static int accept_clients(int sd, char * response_file);
+static int handle_client(int sd, char * response_file);
 
 int main(int argc, char **argv)
 {
 	int port;
 	
 	// Gibt einen Fehler wenn es keinen ersten Parameter gibt (Null Pointer)
-	if (!argv[1])
+	if (argc < 3)
 	{
-		printf("Error: no port given.\n");
+		printf("Error: no port or file given.\n");
 		exit(1);
 	}
 	
@@ -48,13 +45,13 @@ int main(int argc, char **argv)
 		/* Fehler */
 	}
 	
-	accept_clients(sd);		
+	accept_clients(sd, argv[2]);		
 	exit(0);
 }
 
 // Das static sorgt dafür das die Funktion "Modullokal" wird. Wird das Modul zu anderen Dateien 
 // hinzugelinkt, ist die Funktion für diese nicht sichtbar. (vgl. private/protected in JAVA)
-static int accept_clients(int sd)
+static int accept_clients(int sd, char * response_file)
 {	
 	// return code und new socket descriptor
 	int retcode, nsd; 
@@ -75,7 +72,7 @@ static int accept_clients(int sd)
 		// Server kann immer nur einen Client gleichzeitig verarbeiten, der nächste Client wird erst akzeptiert
 		// wenn handle_client() durchgelaufen ist. Es empfiehlt sich einen fork() durchzuführen und handle_client()
 		// erst im Kindprozess auszuführen.
-		handle_client(nsd);
+		handle_client(nsd, response_file);
 	}
 	
 	// Das hier wird nur ausgeführt wenn ein Fehler aufgetreten ist
@@ -83,3 +80,48 @@ static int accept_clients(int sd)
 	return nsd;
 }
 
+
+#define BUFSIZE 100
+
+int handle_client(int sd, char * response_file){
+	
+	// BUFSIZE ist als globale konstante #definiert 
+	char buf[BUFSIZE];
+	
+	int cc; // Character count
+		
+	// Der Rückgabewert von read wird gleichzeitig cc zugewiesen und von while überprüft
+	cc = read(sd, buf, BUFSIZE);
+	
+		if (cc < 0)
+		{
+			printf("Error when reading request -> Exiting\n");
+			exit(sd);
+		}
+		printf("\n==========\nREQUEST\n==========\n");
+		buf[cc] = '\0';
+		printf("%s", buf);
+		printf("\n==========\nRESPONSE\n==========\n");
+	
+	    int fd = open(response_file, O_RDONLY);
+		
+		while (cc = read(fd, buf, BUFSIZE))
+		{
+			if (cc < 0)
+			{
+				printf("Error when reading response file (No. %d) -> Exiting\n", cc);
+				exit(cc);
+			}
+			buf[cc] = '\0';
+			printf("%s", buf);
+			write(sd, buf, cc);
+		}
+		close(fd);
+	
+	printf("\n===========\n");
+			
+	// Verbindung schließen
+	close(sd);
+
+	return(sd);	
+}
