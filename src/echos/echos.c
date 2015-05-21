@@ -9,8 +9,7 @@
 */
 
 #include <stdlib.h>
-
-#define BUFSIZE 1000
+#include "handleclient.h"
 
 int main(int argc, char **argv)
 {
@@ -32,7 +31,8 @@ int main(int argc, char **argv)
 	exit(0);
 }
 
-// Zu Erklärung von static: siehe handle_client(...)
+// Das static sorgt dafür das die Funktion "Modullokal" wird. Wird das Modul zu anderen Dateien 
+// hinzugelinkt, ist die Funktion für diese nicht sichtbar. (vgl. private/protected in JAVA)
 static int accept_clients(int sd)
 {	
 	// return code und new socket descriptor
@@ -54,7 +54,7 @@ static int accept_clients(int sd)
 		// Server kann immer nur einen Client gleichzeitig verarbeiten, der nächste Client wird erst akzeptiert
 		// wenn handle_client() durchgelaufen ist. Es empfiehlt sich einen fork() durchzuführen und handle_client()
 		// erst im Kindprozess auszuführen.
-		handle_client();
+		handle_client(nsd);
 	}
 	
 	// Das hier wird nur ausgeführt wenn ein Fehler aufgetreten ist
@@ -62,31 +62,3 @@ static int accept_clients(int sd)
 	return nsd;
 }
 
-// Das static sorgt dafür das die Funktion "Modullokal" wird. Wird das Modul zu anderen Dateien 
-// hinzugelinkt, ist die Funktion für diese nicht sichtbar. (vgl. private/protected in JAVA)
-static int handle_client(int sd){
-	
-	// BUFSIZE ist als globale konstante #definiert 
-	char buf[BUFSIZE];
-	
-	int cc; // Character count
-	
-	// Der Rückgabewert von read wird gleichzeitig cc zugewiesen und von while überprüft
-	while (cc = read(sd, buf, BUFSIZE))
-	{
-		if (cc < 0)
-		{
-			// Fehler
-		}
-		
-		// Mit dem write(...) wird der gerade eingelesene buffer wieder zurückgeschrieben
-		if (write(sd, buf, cc) < 0)
-		{
-			// Fehler
-		}		
-	}
-	// Verbindung schließen
-	close(sd);
-
-	return(sd);	
-}
