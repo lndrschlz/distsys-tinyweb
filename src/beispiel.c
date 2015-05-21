@@ -29,4 +29,14 @@ static int accept_clients(int sd)
 	int retcode, nsd; 
 	
 	struct sockaddr_in from_client;
+	
+	while(1)
+	{		
+		// Bestimme die Länge der Struktur
+		// muss neu initialisiert werden, weil accept(...) die Struktur überschreibt
+		from_client_len  = sizeof(from_client);
+		
+		// Aufruf erwartet eine GENERISCHE Struktur, die ipv4-spezifische wird "reingecastet"
+		nsd = accept(sd, (struct sockaddr *) &from_client, &from_client_len);
+	}
 }
