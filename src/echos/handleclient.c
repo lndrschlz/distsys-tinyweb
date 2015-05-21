@@ -20,7 +20,7 @@ int handle_client(int sd){
 		{
 			// Fehler
 		}
-		
+		printf("REQUEST: %s", buf);
 		// Mit dem write(...) wird der gerade eingelesene buffer wieder zurückgeschrieben
 		if (write(sd, buf, cc) < 0)
 		{

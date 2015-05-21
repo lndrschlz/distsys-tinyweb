@@ -4,7 +4,7 @@
 all: echos
 
 echos: echos.o handleclient.o
-	gcc -o echos echos.o handleclient.o
+	gcc -o echos echos.o handleclient.o libsockets.a
 
 echos.o: 
 	gcc -o echos.o -c echos.c
