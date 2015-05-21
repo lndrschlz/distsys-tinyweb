@@ -37,6 +37,6 @@ static int accept_clients(int sd)
 		from_client_len  = sizeof(from_client);
 		
 		// Aufruf erwartet eine GENERISCHE Struktur, die ipv4-spezifische wird "reingecastet"
-		nsd = accept(sd, (struct sockaddr *) &from_client, &from_client_len);
+		nsd = accept(/* in */sd, /*in out */(struct sockaddr *) &from_client, /*in out*/ &from_client_len);
 	}
 }
