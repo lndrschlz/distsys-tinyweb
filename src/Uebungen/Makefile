@@ -3,7 +3,11 @@ CFLAGS=-Wall -Werror -Wunreachable-code -Wswitch-default -std=gnu99 -pedantic -O
 CC=gcc
 
 .PHONY: all
-all: file-o-res echos
+all: file-o-res file-o-req echos
+
+.PHONY: file-o-req
+file-o-req:	file-o-req.o
+	gcc -o file-o-req file-o-req.o libsockets.a
 
 .PHONY: file-o-res
 file-o-res:  file-o-res.o
@@ -18,6 +22,7 @@ echos: echos.o handleclient.o
 
 .PHONY: clean
 clean:
-	rm echos
-	rm file-o-res
-	rm *.o 
+	-rm echos
+	-rm file-o-res
+	-rm file-o-req
+	-rm *.o 
