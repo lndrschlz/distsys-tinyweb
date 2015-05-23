@@ -23,6 +23,9 @@ Schulz, Reutebuch, Polkehn
 static int accept_clients(int sd, char * response_file);
 static int handle_client(int sd, char * response_file);
 
+// GLOBAL REQUEST COUNTER
+static int request_counter = 0;
+
 int main(int argc, char **argv)
 {
 	int port;
@@ -54,7 +57,7 @@ int main(int argc, char **argv)
 static int accept_clients(int sd, char * response_file)
 {	
 	// return code und new socket descriptor
-	int retcode, nsd; 
+	int nsd; 
 	
 	struct sockaddr_in from_client;
 	
@@ -62,7 +65,7 @@ static int accept_clients(int sd, char * response_file)
 	{		
 		// Bestimme die Länge der Struktur
 		// muss neu initialisiert werden, weil accept(...) die Struktur überschreibt
-		int from_client_len  = sizeof(from_client);
+		socklen_t from_client_len  = sizeof(from_client);
 		
 		// Aufruf erwartet eine GENERISCHE Struktur, die ipv4-spezifische wird "reingecastet"
 		nsd = accept(/* in */sd, /*in out */(struct sockaddr *) &from_client, /*in out*/ &from_client_len);
@@ -85,6 +88,8 @@ static int accept_clients(int sd, char * response_file)
 
 int handle_client(int sd, char * response_file){
 	
+	request_counter++;
+	
 	// BUFSIZE ist als globale konstante #definiert 
 	char buf[BUFSIZE];
 	
@@ -98,14 +103,14 @@ int handle_client(int sd, char * response_file){
 			printf("Error when reading request -> Exiting\n");
 			exit(sd);
 		}
-		printf("\n==========\nREQUEST\n==========\n");
+		printf("---REQ #%d---\n",request_counter);
 		buf[cc] = '\0';
 		printf("%s", buf);
-		printf("\n==========\nRESPONSE\n==========\n");
+		printf("---RES #%d---\n", request_counter);
 	
 	    int fd = open(response_file, O_RDONLY);
 		
-		while (cc = read(fd, buf, BUFSIZE))
+		while ((cc = read(fd, buf, BUFSIZE)))
 		{
 			if (cc < 0)
 			{
@@ -117,11 +122,9 @@ int handle_client(int sd, char * response_file){
 			write(sd, buf, cc);
 		}
 		close(fd);
-	
-	printf("\n===========\n");
-			
+
 	// Verbindung schließen
 	close(sd);
 
 	return(sd);	
-}
+}	
