@@ -15,7 +15,7 @@ int handle_client(int sd){
 	int cc; // Character count
 	
 	// Der Rückgabewert von read wird gleichzeitig cc zugewiesen und von while überprüft
-	while (cc = read(sd, buf, BUFSIZE))
+	while ((cc = read(sd, buf, BUFSIZE)))
 	{
 		if (cc < 0)
 		{

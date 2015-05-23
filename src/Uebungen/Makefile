@@ -18,4 +18,6 @@ echos: echos.o handleclient.o
 
 .PHONY: clean
 clean:
-	rm echos *.o file-o-res echos
+	rm echos
+	rm file-o-res
+	rm *.o 

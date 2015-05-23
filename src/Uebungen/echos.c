@@ -20,9 +20,9 @@
 #include <netdb.h>
 #include <unistd.h>
 
-
 // Eigene Module
 #include "handleclient.h"
+#include "passive_tcp.h"
 
 static int accept_clients(int sd);
 
@@ -41,7 +41,7 @@ int main(int argc, char **argv)
 	
 	// Liefert einen socket zurück (Fehlerbehandlung für sd < 0 möglich)
 	// sd ist ein Filedescriptor
-	int sd = passive_tcp(port);
+	int sd = passive_tcp(port, 5);
 	
 	if (sd < 0)
 	{
@@ -56,8 +56,8 @@ int main(int argc, char **argv)
 // hinzugelinkt, ist die Funktion für diese nicht sichtbar. (vgl. private/protected in JAVA)
 static int accept_clients(int sd)
 {	
-	// return code und new socket descriptor
-	int retcode, nsd; 
+	// new socket descriptor
+	int nsd; 
 	
 	struct sockaddr_in from_client;
 	
@@ -65,7 +65,7 @@ static int accept_clients(int sd)
 	{		
 		// Bestimme die Länge der Struktur
 		// muss neu initialisiert werden, weil accept(...) die Struktur überschreibt
-		int from_client_len  = sizeof(from_client);
+		socklen_t from_client_len  = sizeof(from_client);
 		
 		// Aufruf erwartet eine GENERISCHE Struktur, die ipv4-spezifische wird "reingecastet"
 		nsd = accept(/* in */sd, /*in out */(struct sockaddr *) &from_client, /*in out*/ &from_client_len);
