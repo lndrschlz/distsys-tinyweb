@@ -2,4 +2,4 @@
 DHBW Ravensburg: Verteilte Systeme (TIT12) - Gruppe Schulz, Polkehn, Reutebuch
 
 ## Vorgehen ##
-Als Rahmenprogramm für die Übungen kann _beispiel.c_ verwendet werden. Das ist ein Beispielserver von Hr. Reutemann
+Ein Rahmenprogramm für den Server ist das Programm _echos_ mit den Quelltextdateien _echos.c_ und _handleclient.c_
