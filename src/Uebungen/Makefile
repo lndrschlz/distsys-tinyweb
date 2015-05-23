@@ -3,7 +3,7 @@ CFLAGS=-Wall -Werror -Wunreachable-code -Wswitch-default -std=gnu99 -pedantic -O
 CC=gcc
 
 .PHONY: all
-all: file-o-res #echos
+all: file-o-res echos
 
 .PHONY: file-o-res
 file-o-res:  file-o-res.o
@@ -15,12 +15,6 @@ echos: echos.o handleclient.o
 
 %.o : %.c
 	$(CC) -c $(CFLAGS) $< -o $@
-
-#echos.o: 	
-#	gcc -o echos.o -c echos.c
-
-#handleclient.o:
-#	gcc -o handleclient.o -c handleclient.c
 
 .PHONY: clean
 clean:

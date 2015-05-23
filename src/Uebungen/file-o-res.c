@@ -15,6 +15,7 @@ Schulz, Reutebuch, Polkehn
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <unistd.h>
+#include "passive_tcp.h"
 
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -41,7 +42,7 @@ int main(int argc, char **argv)
 	
 	// Liefert einen socket zurück (Fehlerbehandlung für sd < 0 möglich)
 	// sd ist ein Filedescriptor
-	int sd = passive_tcp(port);
+	int sd = passive_tcp(port, 5);
 	
 	if (sd < 0)
 	{
