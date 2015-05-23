@@ -21,7 +21,8 @@ int main(int argc, char **argv)
 	// Check if all required arguments are given
 	if (argc < 4 )
 	{
-		fprintf(stderr, "Error: Only %d of 3 required arguments given\n", argc-1);
+		fprintf(stderr, "Error: %d arguments missing\n", 4 - argc);
+		fprintf(stderr, "Usage: > file-o-req <SERVER> <PORT> <REQUEST_FILE>\n");
 		exit(1);
 	}
 	
@@ -40,7 +41,7 @@ int main(int argc, char **argv)
 	{
 		if (cc < 0)
 		{
-			fprintf(stderr, "Error: %d when reading file!", cc);
+			fprintf(stderr, "Error: %d when reading file!\n", cc);
 			exit(1);
 		}
 		
@@ -57,7 +58,7 @@ int main(int argc, char **argv)
 	{
 		if (cc < 0)
 		{
-			fprintf(stderr, "Error: %d when reading server response!", cc);
+			fprintf(stderr, "Error: %d when reading server response!\n", cc);
 			exit(1);
 		}
 		
