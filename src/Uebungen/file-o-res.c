@@ -21,6 +21,7 @@ Schulz, Reutebuch, Polkehn
 #include <sys/stat.h>
 #include <fcntl.h>
 
+#define BUFSIZE 100
 
 static int accept_clients(int sd, char * response_file);
 static int handle_client(int sd, char * response_file, struct sockaddr_in * from_client);
@@ -89,18 +90,30 @@ static int accept_clients(int sd, char * response_file)
 	return nsd;
 }
 
+
 static int write_res_header(int sd, time_t time)
-{	
+{   // \\ backslash
+    char res_header[BUFSIZE];
+    int hlen = BUFSIZE;
+    
+    res_header[0]  = "HTTP/1.1 200 OK \r\n"; // CRLF \r\n
+    res_header[20] = "";
+    
+    
+    // write header to Socket
+    write(sd, res_header, hlen);
+    
 	return 0;	
 }
 
 static int write_res_body(int sd, time_t time)
+
 {
 	return 0;	
 }
 
 
-#define BUFSIZE 100
+
 
 int handle_client(int sd, char * response_file,struct sockaddr_in * from_client){
 	
