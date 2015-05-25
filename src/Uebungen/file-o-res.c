@@ -16,13 +16,14 @@ Schulz, Reutebuch, Polkehn
 #include <netdb.h>
 #include <unistd.h>
 #include "passive_tcp.h"
+#include "time.h"
 
 #include <sys/stat.h>
 #include <fcntl.h>
 
 
 static int accept_clients(int sd, char * response_file);
-static int handle_client(int sd, char * response_file);
+static int handle_client(int sd, char * response_file, struct sockaddr_in * from_client);
 
 // GLOBAL REQUEST COUNTER
 static int request_counter = 0;
@@ -76,7 +77,11 @@ static int accept_clients(int sd, char * response_file)
 		// Server kann immer nur einen Client gleichzeitig verarbeiten, der nächste Client wird erst akzeptiert
 		// wenn handle_client() durchgelaufen ist. Es empfiehlt sich einen fork() durchzuführen und handle_client()
 		// erst im Kindprozess auszuführen.
-		handle_client(nsd, response_file);
+		
+		// Ausgabe: Port und IP des verbindungsversuchs
+		
+		
+		handle_client(nsd, response_file, &from_client);
 	}
 	
 	// Das hier wird nur ausgeführt wenn ein Fehler aufgetreten ist
@@ -84,11 +89,12 @@ static int accept_clients(int sd, char * response_file)
 	return nsd;
 }
 
-static int write_res_header(int sd, long time)
-{
+static int write_res_header(int sd, time_t time)
+{	
 	return 0;	
 }
-static int write_res_body(int sd, long time)
+
+static int write_res_body(int sd, time_t time)
 {
 	return 0;	
 }
@@ -96,14 +102,16 @@ static int write_res_body(int sd, long time)
 
 #define BUFSIZE 100
 
-int handle_client(int sd, char * response_file){
+int handle_client(int sd, char * response_file,struct sockaddr_in * from_client){
 	
 	request_counter++;
 	
 	// BUFSIZE ist als globale konstante #definiert 
 	char buf[BUFSIZE];
-	
 	int cc; // Character count
+	
+	// get request timestamp
+	time_t current_time = time(NULL);
 		
 	// Der Rückgabewert von read wird gleichzeitig cc zugewiesen und von while überprüft
 	cc = read(sd, buf, BUFSIZE);
@@ -118,7 +126,7 @@ int handle_client(int sd, char * response_file){
 		printf("%s", buf);
 		printf("---RES #%d---\n", request_counter);
 		
-		long current_time;
+		
 		
 		write_res_header(sd, current_time );
 		write_res_body(sd, current_time );
