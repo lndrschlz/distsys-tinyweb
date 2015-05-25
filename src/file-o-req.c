@@ -11,7 +11,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 
-#include "connect_tcp.h"
+#include <connect_tcp.h>
 
 
 #define BUFSIZE 1000

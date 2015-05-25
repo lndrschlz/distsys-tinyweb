@@ -15,8 +15,8 @@ Schulz, Reutebuch, Polkehn
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <unistd.h>
-#include "passive_tcp.h"
-#include "time.h"
+#include <passive_tcp.h>
+#include <time.h>
 
 #include <sys/stat.h>
 #include <fcntl.h>
