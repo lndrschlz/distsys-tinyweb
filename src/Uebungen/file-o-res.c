@@ -78,11 +78,35 @@ static int accept_clients(int sd, char * response_file)
 		// Server kann immer nur einen Client gleichzeitig verarbeiten, der nächste Client wird erst akzeptiert
 		// wenn handle_client() durchgelaufen ist. Es empfiehlt sich einen fork() durchzuführen und handle_client()
 		// erst im Kindprozess auszuführen.
+		pid_t child_pid;
+		if ((child_pid = fork()))
+		{	
+			// Vaterprozess
+			// Accepting socket schließen
+			close(nsd);
+			
+			// Info ausgeben			
+			if (child_pid < 0){
+				// Fehler
+				printf("[ERR #%d] Could not create child process for request. Request Denied.\n", child_pid);
+			}
+			else
+			{
+				printf("[INFO] Created child process #%d to handle request.\n", child_pid);
+			}
+		}
+		else 
+		{
+			// Kindprozess
+			// Listening socket schließen
+			close(sd);
+			
+			// Client bearbeiten
+			int ret;	
+			ret = handle_client(nsd, response_file, &from_client);
+			exit(ret);
+		}
 		
-		// Ausgabe: Port und IP des verbindungsversuchs
-		
-		
-		handle_client(nsd, response_file, &from_client);
 	}
 	
 	// Das hier wird nur ausgeführt wenn ein Fehler aufgetreten ist
@@ -93,7 +117,7 @@ static int accept_clients(int sd, char * response_file)
 
 static int write_res_header(int sd, time_t time)
 {   // \\ backslash
-    char res_header[BUFSIZE];
+  /*  char res_header[BUFSIZE];
     int hlen = BUFSIZE;
     
     res_header[0]  = "HTTP/1.1 200 OK \r\n"; // CRLF \r\n
@@ -101,19 +125,15 @@ static int write_res_header(int sd, time_t time)
     
     
     // write header to Socket
-    write(sd, res_header, hlen);
+    write(sd, res_header, hlen);*/
     
 	return 0;	
 }
 
 static int write_res_body(int sd, time_t time)
-
-{
+{	
 	return 0;	
 }
-
-
-
 
 int handle_client(int sd, char * response_file,struct sockaddr_in * from_client){
 	
@@ -125,26 +145,24 @@ int handle_client(int sd, char * response_file,struct sockaddr_in * from_client)
 	
 	// get request timestamp
 	time_t current_time = time(NULL);
-	printf("--- REQ #%d SRC %s:%d ---\n",request_counter, inet_ntoa(from_client->sin_addr), ntohs(from_client->sin_port));
+	printf("[REQ] SRC %s:%d\n", inet_ntoa(from_client->sin_addr), ntohs(from_client->sin_port));
 		
 	// Der Rückgabewert von read wird gleichzeitig cc zugewiesen und von while überprüft
 	cc = read(sd, buf, BUFSIZE);
 	
-		if (cc < 0)
-		{
-			printf("Error when reading request -> Exiting\n");
-			exit(sd);
-		}
-		
-		buf[cc] = '\0';
-		printf("%s", buf);
-		printf("--- RES #%d ---\n", request_counter);
-		
-		
-		
-		write_res_header(sd, current_time );
-		write_res_body(sd, current_time );
-		
+	if (cc < 0)
+	{
+		printf("Error when reading request -> Exiting\n");
+		exit(sd);
+	}
+	
+	buf[cc] = '\0';
+	printf("%s", buf);
+	printf("[RES] DST %s:%d\n", inet_ntoa(from_client->sin_addr), ntohs(from_client->sin_port));
+	
+	write_res_header(sd, current_time );
+	write_res_body(sd, current_time );
+				
 	    /*int fd = open(response_file, O_RDONLY);
 		
 		while ((cc = read(fd, buf, BUFSIZE)))
