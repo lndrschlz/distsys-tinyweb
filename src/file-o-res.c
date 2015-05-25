@@ -183,23 +183,9 @@ int handle_client(int sd, char * response_file,struct sockaddr_in * from_client,
 	printf("%s", buf);
 	printf("[RES #%d] DST %s:%d\n", req_no, inet_ntoa(from_client->sin_addr), ntohs(from_client->sin_port));
 	
+	// Response schreiben
 	write_res_header(sd, current_time );
 	write_res_body(sd, current_time );
-				
-	    /*int fd = open(response_file, O_RDONLY);
-		
-		while ((cc = read(fd, buf, BUFSIZE)))
-		{
-			if (cc < 0)
-			{
-				printf("Error when reading response file (No. %d) -> Exiting\n", cc);
-				exit(cc);
-			}
-			buf[cc] = '\0';
-			printf("%s", buf);
-			write(sd, buf, cc);
-		}
-		close(fd);*/
 
 	// Verbindung schließen
 	close(sd);
