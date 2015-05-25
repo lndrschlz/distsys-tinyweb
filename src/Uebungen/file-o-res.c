@@ -84,6 +84,15 @@ static int accept_clients(int sd, char * response_file)
 	return nsd;
 }
 
+static int write_res_header(int sd, long time)
+{
+	return 0;	
+}
+static int write_res_body(int sd, long time)
+{
+	return 0;	
+}
+
 
 #define BUFSIZE 100
 
@@ -108,8 +117,13 @@ int handle_client(int sd, char * response_file){
 		buf[cc] = '\0';
 		printf("%s", buf);
 		printf("---RES #%d---\n", request_counter);
-	
-	    int fd = open(response_file, O_RDONLY);
+		
+		long current_time;
+		
+		write_res_header(sd, current_time );
+		write_res_body(sd, current_time );
+		
+	    /*int fd = open(response_file, O_RDONLY);
 		
 		while ((cc = read(fd, buf, BUFSIZE)))
 		{
@@ -122,7 +136,7 @@ int handle_client(int sd, char * response_file){
 			printf("%s", buf);
 			write(sd, buf, cc);
 		}
-		close(fd);
+		close(fd);*/
 
 	// Verbindung schließen
 	close(sd);

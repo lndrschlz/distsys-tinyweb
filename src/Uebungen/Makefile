@@ -7,15 +7,15 @@ all: file-o-res file-o-req echos
 
 .PHONY: file-o-req
 file-o-req:	file-o-req.o
-	gcc -o file-o-req file-o-req.o libsockets.a
+	$(CC) -o file-o-req file-o-req.o libsockets.a
 
 .PHONY: file-o-res
 file-o-res:  file-o-res.o
-	gcc -o file-o-res file-o-res.o libsockets.a
+	$(CC) -o file-o-res file-o-res.o libsockets.a
 
 .PHONY: echos
 echos: echos.o handleclient.o
-	gcc -o echos echos.o handleclient.o libsockets.a
+	$(CC) -o echos echos.o handleclient.o libsockets.a
 
 %.o : %.c
 	$(CC) -c $(CFLAGS) $< -o $@
