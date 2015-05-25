@@ -112,6 +112,7 @@ int handle_client(int sd, char * response_file,struct sockaddr_in * from_client)
 	
 	// get request timestamp
 	time_t current_time = time(NULL);
+	printf("--- REQ #%d SRC %s:%d ---\n",request_counter, inet_ntoa(from_client->sin_addr), ntohs(from_client->sin_port));
 		
 	// Der Rückgabewert von read wird gleichzeitig cc zugewiesen und von while überprüft
 	cc = read(sd, buf, BUFSIZE);
@@ -121,10 +122,10 @@ int handle_client(int sd, char * response_file,struct sockaddr_in * from_client)
 			printf("Error when reading request -> Exiting\n");
 			exit(sd);
 		}
-		printf("---REQ #%d---\n",request_counter);
+		
 		buf[cc] = '\0';
 		printf("%s", buf);
-		printf("---RES #%d---\n", request_counter);
+		printf("--- RES #%d ---\n", request_counter);
 		
 		
 		
