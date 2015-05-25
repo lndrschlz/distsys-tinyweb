@@ -17,6 +17,7 @@ Schulz, Reutebuch, Polkehn
 #include <unistd.h>
 #include <passive_tcp.h>
 #include <time.h>
+#include <sys/resource.h>
 
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -24,7 +25,7 @@ Schulz, Reutebuch, Polkehn
 #define BUFSIZE 100
 
 static int accept_clients(int sd, char * response_file);
-static int handle_client(int sd, char * response_file, struct sockaddr_in * from_client);
+static int handle_client(int sd, char * response_file, struct sockaddr_in * from_client, int req_no);
 
 // GLOBAL REQUEST COUNTER
 static int request_counter = 0;
@@ -74,6 +75,9 @@ static int accept_clients(int sd, char * response_file)
 		nsd = accept(/* in */sd, /*in out */(struct sockaddr *) &from_client, /*in out*/ &from_client_len);
 		
 		// Fehler: break;
+		
+		request_counter++;
+		int req_no = request_counter;
 			
 		// Server kann immer nur einen Client gleichzeitig verarbeiten, der nächste Client wird erst akzeptiert
 		// wenn handle_client() durchgelaufen ist. Es empfiehlt sich einen fork() durchzuführen und handle_client()
@@ -92,18 +96,37 @@ static int accept_clients(int sd, char * response_file)
 			}
 			else
 			{
-				printf("[INFO] Created child process #%d to handle request.\n", child_pid);
+				printf("[INFO] Created child process (%d) to handle request #%d.\n", child_pid, req_no);
 			}
 		}
 		else 
 		{
 			// Kindprozess
+			// Zeitmessung starten
+			time_t start_time = time(NULL);	
+			
 			// Listening socket schließen
 			close(sd);
 			
+			int ret;
+			struct rusage usage;
+			time_t end_time;
+			
 			// Client bearbeiten
-			int ret;	
-			ret = handle_client(nsd, response_file, &from_client);
+			ret = handle_client(nsd, response_file, &from_client, req_no);
+			
+			// Dauer auswerten
+			end_time = time(NULL);
+			getrusage(RUSAGE_SELF,&usage);
+			double duration = difftime(end_time, start_time);
+			double utime = usage.ru_utime.tv_sec + usage.ru_utime.tv_usec/1000000;
+			double stime = usage.ru_stime.tv_sec + usage.ru_stime.tv_usec/1000000;
+			
+			
+			// Ausgabe
+			printf("[INFO] Child process (%d) finished handling request #%d and will terminate.\n", getpid(), req_no);
+			printf("       Real Time: %0.3f System Time: %0.6fs User Time: %0.6fs \n",duration, utime, stime);
+			
 			exit(ret);
 		}
 		
@@ -135,7 +158,7 @@ static int write_res_body(int sd, time_t time)
 	return 0;	
 }
 
-int handle_client(int sd, char * response_file,struct sockaddr_in * from_client){
+int handle_client(int sd, char * response_file,struct sockaddr_in * from_client, int req_no){
 	
 	request_counter++;
 	
@@ -145,7 +168,7 @@ int handle_client(int sd, char * response_file,struct sockaddr_in * from_client)
 	
 	// get request timestamp
 	time_t current_time = time(NULL);
-	printf("[REQ] SRC %s:%d\n", inet_ntoa(from_client->sin_addr), ntohs(from_client->sin_port));
+	printf("[REQ #%d] SRC %s:%d\n",req_no, inet_ntoa(from_client->sin_addr), ntohs(from_client->sin_port));
 		
 	// Der Rückgabewert von read wird gleichzeitig cc zugewiesen und von while überprüft
 	cc = read(sd, buf, BUFSIZE);
@@ -158,7 +181,7 @@ int handle_client(int sd, char * response_file,struct sockaddr_in * from_client)
 	
 	buf[cc] = '\0';
 	printf("%s", buf);
-	printf("[RES] DST %s:%d\n", inet_ntoa(from_client->sin_addr), ntohs(from_client->sin_port));
+	printf("[RES #%d] DST %s:%d\n", req_no, inet_ntoa(from_client->sin_addr), ntohs(from_client->sin_port));
 	
 	write_res_header(sd, current_time );
 	write_res_body(sd, current_time );
