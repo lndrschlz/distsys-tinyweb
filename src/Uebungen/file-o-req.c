@@ -52,7 +52,9 @@ int main(int argc, char **argv)
 	
 	// Terminate the request
 	write(sd, '\0', 1);
-		
+	
+	printf("[INFO] Waiting for server response\n");
+	
 	// Loop and read the server response, write response to stdout
 	while ((cc = read(sd, buf, BUFSIZE)))
 	{
@@ -67,6 +69,7 @@ int main(int argc, char **argv)
 		
 	// Close the socket
 	close(sd);
+	printf("[INFO] Connection closed.\n");
 	
 	// Exit the programmn
 	exit(0);
