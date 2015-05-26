@@ -18,7 +18,7 @@ Schulz, Reutebuch, Polkehn
 #include <passive_tcp.h>
 #include <time.h>
 #include <sys/resource.h>
-
+#include <string.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 
@@ -158,9 +158,27 @@ static int write_res_header(int sd, time_t time)
 	return 0;	
 }
 
+// Response HTML template
+#define response_html 
+						
+
+
 /* PURPOSE: Schreibe einen HTTP response body in das socket sd */
-static int write_res_body(int sd, time_t time)
+static int write_res_body(int sd, time_t res_time)
 {	
+	char response_body;
+	char  timestr[BUFSIZE];
+	struct tm *ts;
+		
+	ts = localtime(&res_time);
+	strftime(timestr, BUFSIZE, "%a, %d %b %Y %T %z", ts);	
+	
+	sprintf(&response_body, "String1"\
+							"String2"\
+							"Uhrzeit: %s"\
+							"String 3"
+			, timestr);
+	write(sd, &response_body, strlen(&response_body)); 
 	return 0;	
 }
 
