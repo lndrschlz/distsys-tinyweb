@@ -34,35 +34,42 @@ int main(int argc, char **argv)
 {
 	int port;
 	
-	// Gibt einen Fehler wenn es keinen ersten Parameter gibt (Null Pointer)
+	// Teste ob alle Parameter gegeben sind.
 	if (argc < 3)
 	{
-		printf("Error: no port or file given.\n");
+		printf("[ERR] Not enough arguments given. Exiting.\n");
+		printf("[INFO] Syntax is ./file-o-res <PORT> <RESPONSE_FILE>\n");
 		exit(1);
 	}
 	
+	// Lese die Portnummer aus dem ersten Argument
 	port = atoi(argv[1]);
 	
-	// Liefert einen socket zurück (Fehlerbehandlung für sd < 0 möglich)
-	// sd ist ein Filedescriptor
+	// Erzeuge ein listening socket, auf dem requests angenommen werden
 	int sd = passive_tcp(port, 5);
 	
+	// sd < 0 weist auf einen Fehler hin
 	if (sd < 0)
 	{
-		/* Fehler */
+		printf("[ERR #%d] Error when creating listening socket. Exiting.\n", sd);
 	}
 	
-	accept_clients(sd, argv[2]);		
+	// Fange an Clients zu bearbeiten (Endlos)
+	accept_clients(sd, argv[2]);	
+	
+	// Beende das Programm	
 	exit(0);
 }
 
 // Das static sorgt dafür das die Funktion "Modullokal" wird. Wird das Modul zu anderen Dateien 
 // hinzugelinkt, ist die Funktion für diese nicht sichtbar. (vgl. private/protected in JAVA)
+/* PURPOSE: Akzeptiere Requests in einer Endlosschleife und erzeuge Kindprozesse die die Requests bearbeiten*/
 static int accept_clients(int sd, char * response_file)
 {	
-	// return code und new socket descriptor
+	// Descriptor fuer die Listening socket deklarieren
 	int nsd; 
 	
+	// Struktur fuer die Adrese des Client deklarieren
 	struct sockaddr_in from_client;
 	
 	while(1)
@@ -74,14 +81,11 @@ static int accept_clients(int sd, char * response_file)
 		// Aufruf erwartet eine GENERISCHE Struktur, die ipv4-spezifische wird "reingecastet"
 		nsd = accept(/* in */sd, /*in out */(struct sockaddr *) &from_client, /*in out*/ &from_client_len);
 		
-		// Fehler: break;
-		
+		// Requesz-Zaehler erhoehen und dem Request eine Nummer zuweisen
 		request_counter++;
 		int req_no = request_counter;
-			
-		// Server kann immer nur einen Client gleichzeitig verarbeiten, der nächste Client wird erst akzeptiert
-		// wenn handle_client() durchgelaufen ist. Es empfiehlt sich einen fork() durchzuführen und handle_client()
-		// erst im Kindprozess auszuführen.
+		
+		// Fork durchführen, damit ein Kindprozess den Request bearbeiten kann
 		pid_t child_pid;
 		if ((child_pid = fork()))
 		{	
@@ -91,11 +95,12 @@ static int accept_clients(int sd, char * response_file)
 			
 			// Info ausgeben			
 			if (child_pid < 0){
-				// Fehler
+				// Fehler beim Forken - Infomeldung ausgeben
 				printf("[ERR #%d] Could not create child process for request. Request Denied.\n", child_pid);
 			}
 			else
-			{
+			{	
+				// Fork hat funktioniert - Infomeldung mit Prozess ausgeben
 				printf("[INFO] Created child process (%d) to handle request #%d.\n", child_pid, req_no);
 			}
 		}
@@ -115,7 +120,7 @@ static int accept_clients(int sd, char * response_file)
 			// Client bearbeiten
 			ret = handle_client(nsd, response_file, &from_client, req_no);
 			
-			// Dauer auswerten
+			// Ressourcenverbrauch berechnen
 			end_time = time(NULL);
 			getrusage(RUSAGE_SELF,&usage);
 			double duration = difftime(end_time, start_time);
@@ -123,7 +128,7 @@ static int accept_clients(int sd, char * response_file)
 			double stime = usage.ru_stime.tv_sec + usage.ru_stime.tv_usec/1000000;
 			
 			
-			// Ausgabe
+			// Prozess wird beendet, Ressourcenverbrauch ausgeben
 			printf("[INFO] Child process (%d) finished handling request #%d and will terminate.\n", getpid(), req_no);
 			printf("       Real Time: %0.3f System Time: %0.6fs User Time: %0.6fs \n",duration, utime, stime);
 			
@@ -137,7 +142,7 @@ static int accept_clients(int sd, char * response_file)
 	return nsd;
 }
 
-
+/* PURPOSE: Schreibe einen HTTP 1.1 Header in das socket sd */
 static int write_res_header(int sd, time_t time)
 {   // \\ backslash
   /*  char res_header[BUFSIZE];
@@ -153,11 +158,13 @@ static int write_res_header(int sd, time_t time)
 	return 0;	
 }
 
+/* PURPOSE: Schreibe einen HTTP response body in das socket sd */
 static int write_res_body(int sd, time_t time)
 {	
 	return 0;	
 }
 
+/* PURPOSE: Behandle die Request EINES clients und sende eine response zurueck */
 int handle_client(int sd, char * response_file,struct sockaddr_in * from_client, int req_no){
 	
 	request_counter++;
@@ -166,16 +173,18 @@ int handle_client(int sd, char * response_file,struct sockaddr_in * from_client,
 	char buf[BUFSIZE];
 	int cc; // Character count
 	
-	// get request timestamp
+	// Die aktuelle Zeit wird bestimmt um sie weiter unten den Methoden write_header und ..body zu uebergeben
 	time_t current_time = time(NULL);
 	printf("[REQ #%d] SRC %s:%d\n",req_no, inet_ntoa(from_client->sin_addr), ntohs(from_client->sin_port));
 		
-	// Der Rückgabewert von read wird gleichzeitig cc zugewiesen und von while überprüft
+	// Die Request wird in den Buffer gelesen
 	cc = read(sd, buf, BUFSIZE);
 	
+	// Wenn der characater count < 0 ist, ist ein Fehler aufgetreten.
 	if (cc < 0)
 	{
 		printf("Error when reading request -> Exiting\n");
+		close(sd);
 		exit(sd);
 	}
 	
@@ -183,7 +192,7 @@ int handle_client(int sd, char * response_file,struct sockaddr_in * from_client,
 	printf("%s", buf);
 	printf("[RES #%d] DST %s:%d\n", req_no, inet_ntoa(from_client->sin_addr), ntohs(from_client->sin_port));
 	
-	// Response schreiben
+	// Response Header und Body in die socket schreiben
 	write_res_header(sd, current_time );
 	write_res_body(sd, current_time );
 
