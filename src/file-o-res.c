@@ -143,18 +143,26 @@ static int accept_clients(int sd, char * response_file)
 }
 
 /* PURPOSE: Schreibe einen HTTP 1.1 Header in das socket sd */
-static int write_res_header(int sd, time_t time)
+static int write_res_header(int sd, time_t res_time)
 {   // \\ backslash
-  /*  char res_header[BUFSIZE];
-    int hlen = BUFSIZE;
+    char* res_header[BUFSIZE];
+    char timestr[BUFSIZE];
     
-    res_header[0]  = "HTTP/1.1 200 OK \r\n"; // CRLF \r\n
-    res_header[20] = "";
+    *res_header = "HTTP/1.1 200 OK \r\n"; // CRLF \r\n
+    res_header[18] = "Date: ";
     
+    struct tm *ts;
+	ts = localtime(&res_time);
+	strftime(timestr, BUFSIZE, "%a, %d %b %Y %T %z", ts);
+	
+	// concatenate timestr to res_header
+    strcat(*res_header, (char*) timestr);
     
-    // write header to Socket
-    write(sd, res_header, hlen);*/
-    
+    // write header & time to Socket
+    int i = write(sd, res_header, strlen(*res_header));
+    if ( i != 0 )
+        exit(0); // good luck searching the unexpected exit point
+        
 	return 0;	
 }
 
