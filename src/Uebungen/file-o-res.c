@@ -17,6 +17,7 @@ Schulz, Reutebuch, Polkehn
 #include <unistd.h>
 #include "passive_tcp.h"
 #include "time.h"
+#include <string.h>
 
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -25,6 +26,7 @@ Schulz, Reutebuch, Polkehn
 
 static int accept_clients(int sd, char * response_file);
 static int handle_client(int sd, char * response_file, struct sockaddr_in * from_client);
+static int write_res_header(int sd, time_t time);
 
 // GLOBAL REQUEST COUNTER
 static int request_counter = 0;
@@ -90,18 +92,39 @@ static int accept_clients(int sd, char * response_file)
 	return nsd;
 }
 
+static char* getCurrTimeFormat(time_t timestamp, char* res_time, int res_time_len) 
+{
+    time_t now = timestamp;
+    struct tm ts;
+    
+    // Get current time
+    time(&now);
+    
+    // Format time, "ddd yyyy-mm-dd hh:mm:ss zzz"
+    // Format time according to RFC1123:
+    // Sun, 06 Nov 1994 08:49:37 GMT
+    ts = *localtime(&now);
+    strftime(res_time, res_time_len, "%a %Y-%m-%d %H:%M:%S %Z", &ts);
+    
+    return 0;
+}
 
-static int write_res_header(int sd, time_t time)
+
+static int write_res_header(int sd, time_t currtime)
 {   // \\ backslash
     char res_header[BUFSIZE];
-    int hlen = BUFSIZE;
+    int res_header_len = BUFSIZE;
+    char* res_time[80];
+    int res_time_len = sizeof(res_time);
     
-    res_header[0]  = "HTTP/1.1 200 OK \r\n"; // CRLF \r\n
-    res_header[20] = "";
+    strcpy(res_header, "HTTP/1.1 200 OK \r\n"); // CRLF \r\n
     
+    // format timestamp
+    getCurrTimeFormat(currtime, res_time, res_time_len);
+    &res_header[18] = res_time;
     
     // write header to Socket
-    write(sd, res_header, hlen);
+    write(sd, res_header, res_header_len);
     
 	return 0;	
 }
