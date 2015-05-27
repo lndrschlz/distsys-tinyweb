@@ -145,48 +145,76 @@ static int accept_clients(int sd, char * response_file)
 /* PURPOSE: Schreibe einen HTTP 1.1 Header in das socket sd */
 static int write_res_header(int sd, time_t res_time)
 {   // \\ backslash
-    char* res_header[BUFSIZE];
+    char res_header;
     char timestr[BUFSIZE];
+	
+	char * status_line = "HTTP/1.1 200 OK\r\n";
+	char header[BUFSIZE];
     
-    *res_header = "HTTP/1.1 200 OK \r\n"; // CRLF \r\n
-    res_header[18] = "Date: ";
+//    res_header = "HTTP/1.1 200 OK \r\n"; // CRLF \r\n
+//    res_header[18] = "Date: ";
     
     struct tm *ts;
 	ts = localtime(&res_time);
 	strftime(timestr, BUFSIZE, "%a, %d %b %Y %T %z", ts);
 	
+	sprintf(header, "Date:%s", timestr);
+	
 	// concatenate timestr to res_header
-    strcat(*res_header, (char*) timestr);
+    sprintf(&res_header, "%s"\
+					     "%s\r\n"\
+						 "\r\n"
+			,(char *)status_line, (char *)header);
     
     // write header & time to Socket
-    int i = write(sd, res_header, strlen(*res_header));
-    if ( i != 0 )
-        exit(0); // good luck searching the unexpected exit point
-        
-	return 0;	
-}
-
-// Response HTML template
-#define response_html 
-						
-
-
-/* PURPOSE: Schreibe einen HTTP response body in das socket sd */
-static int write_res_body(int sd, time_t res_time)
-{	
-	char response_body;
+    int err = write(sd, &res_header, strlen(&res_header));
+	
+    if ( err < 0 ){
+		printf("[ERR #%d] Error when writing header. Exiting.\n", err);
+        exit(err); // good luck searching the unexpected exit point
+	}
+	
+	return 0;
+	
+	/*
+	char response_body[BUFSIZE];
 	char  timestr[BUFSIZE];
 	struct tm *ts;
 		
 	ts = localtime(&res_time);
 	strftime(timestr, BUFSIZE, "%a, %d %b %Y %T %z", ts);	
 	
-	sprintf(&response_body, "String1"\
-							"String2"\
-							"Uhrzeit: %s"\
-							"String 3"
+	sprintf(response_body, "HTTP/1.1 200 OK\r\n"\
+							"Length: 87\r\n"\
+							"Date: %s\r\n"\
+							"\r\n"
 			, timestr);
-	write(sd, &response_body, strlen(&response_body)); 
+			
+	write(sd, response_body, strlen(response_body)); 
+	return 0;	
+	*/
+}
+
+/* PURPOSE: Schreibe einen HTTP response body in das socket sd */
+static int write_res_body(int sd, time_t res_time)
+{	
+	char response_body[BUFSIZE];
+	char  timestr[BUFSIZE];
+	struct tm *ts;
+		
+	ts = localtime(&res_time);
+	strftime(timestr, BUFSIZE, "%a, %d %b %Y %T %z", ts);	
+	
+	sprintf(response_body, "<html>"\
+							"<head></head>"\
+							"<body>Uhrzeit: %s"\
+							"String 3</body></html>"
+			, timestr);
+	
+	//printf("Length: %lu\n", strlen(response_body));
+	//fwrite(response_body, strlen(response_body), sizeof(char), stdout);
+	write(sd, response_body, strlen(response_body)); 
+	//write(sd, "\0", sizeof(char));
 	return 0;	
 }
 
@@ -215,13 +243,17 @@ int handle_client(int sd, char * response_file,struct sockaddr_in * from_client,
 	}
 	
 	buf[cc] = '\0';
-	printf("%s", buf);
+	printf("%s\n", buf);
 	printf("[RES #%d] DST %s:%d\n", req_no, inet_ntoa(from_client->sin_addr), ntohs(from_client->sin_port));
 	
 	// Response Header und Body in die socket schreiben
 	write_res_header(sd, current_time );
 	write_res_body(sd, current_time );
-
+	
+	
+	// Flush socket - Alles durchschreiben
+	shutdown(sd, SHUT_RDWR);
+	
 	// Verbindung schließen
 	close(sd);
 
