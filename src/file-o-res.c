@@ -143,7 +143,7 @@ static int accept_clients(int sd, char * response_file)
 }
 
 /* PURPOSE: Schreibe einen HTTP 1.1 Header in das socket sd */
-static int write_res_header(int sd, time_t res_time)
+static int write_res_header(int sd, time_t res_time, int content_length)
 {   // \\ backslash
     char res_header;
     char timestr[BUFSIZE];
@@ -156,7 +156,9 @@ static int write_res_header(int sd, time_t res_time)
 	ts = localtime(&res_time);
 	strftime(timestr, BUFSIZE, "%a, %d %b %Y %T %z", ts);
 	
-	sprintf(header, "Date:%s", timestr);
+	sprintf(header, "Datetime:%s\r\n"\
+					"Content-Length:%d", 
+					timestr, content_length);
 	
 	// concatenate timestr to res_header
     sprintf(&res_header, "%s"\
@@ -175,43 +177,38 @@ static int write_res_header(int sd, time_t res_time)
 	return 0;
 }
 
+
 /* PURPOSE: Schreibe einen HTTP response body in das socket sd */
-static int write_res_body(int sd, time_t res_time, char * template_file)
+static char * get_res_body(int sd, time_t res_time, char * template_file, char* out_str)
 {	
-	char response_body[BUFSIZE];
-	char response_template[BUFSIZE];
 	char  timestr[BUFSIZE];
 	struct tm *ts;
 		
 	ts = localtime(&res_time);
 	strftime(timestr, BUFSIZE, "%a, %d %b %Y %T %z", ts);	
 	
-	// read html from file
-	
-	sprintf(response_body, 	"<html>"\
+	sprintf(out_str, 	"<html>"\
 								"<head>"\
 									"<title>Server file-o-res.c - Uhrzeit</title>"
 								"</head>"\
 								"<body>"\
 									"Uhrzeit: %s"\
+									"Test"\
 								"</body>"\
 							"</html>"
 			, timestr);
 	
-	//printf("Length: %lu\n", strlen(response_body));
-	//fwrite(response_body, strlen(response_body), sizeof(char), stdout);
-	write(sd, response_body, strlen(response_body)); 
-	//write(sd, "\0", sizeof(char));
 	return 0;	
 }
 
-/* PURPOSE: Behandle die Request EINES clients und sende eine response zurueck */
 int handle_client(int sd, char * response_file,struct sockaddr_in * from_client, int req_no){
+/* PURPOSE: Behandle die Request EINES clients und sende eine response zurueck */
 	
 	request_counter++;
 	
 	// BUFSIZE ist als globale konstante #definiert 
 	char buf[BUFSIZE];
+	char response_body[BUFSIZE];
 	int cc; // Character count
 	
 	// Die aktuelle Zeit wird bestimmt um sie weiter unten den Methoden write_header und ..body zu uebergeben
@@ -234,9 +231,9 @@ int handle_client(int sd, char * response_file,struct sockaddr_in * from_client,
 	printf("[RES #%d] DST %s:%d\n", req_no, inet_ntoa(from_client->sin_addr), ntohs(from_client->sin_port));
 	
 	// Response Header und Body in die socket schreiben
-	write_res_header(sd, current_time );
-	write_res_body(sd, current_time, response_file );
-	
+	get_res_body(sd, current_time, response_file, response_body);
+	write_res_header(sd, current_time, strlen(response_body));
+	write(sd, response_body, strlen(response_body));
 	
 	// Flush socket - Alles durchschreiben
 	shutdown(sd, SHUT_RDWR);
