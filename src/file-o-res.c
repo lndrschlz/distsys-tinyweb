@@ -175,40 +175,29 @@ static int write_res_header(int sd, time_t res_time)
 	}
 	
 	return 0;
-	
-	/*
-	char response_body[BUFSIZE];
-	char  timestr[BUFSIZE];
-	struct tm *ts;
-		
-	ts = localtime(&res_time);
-	strftime(timestr, BUFSIZE, "%a, %d %b %Y %T %z", ts);	
-	
-	sprintf(response_body, "HTTP/1.1 200 OK\r\n"\
-							"Length: 87\r\n"\
-							"Date: %s\r\n"\
-							"\r\n"
-			, timestr);
-			
-	write(sd, response_body, strlen(response_body)); 
-	return 0;	
-	*/
 }
 
 /* PURPOSE: Schreibe einen HTTP response body in das socket sd */
-static int write_res_body(int sd, time_t res_time)
+static int write_res_body(int sd, time_t res_time, char * template_file)
 {	
 	char response_body[BUFSIZE];
+	char response_template[BUFSIZE];
 	char  timestr[BUFSIZE];
 	struct tm *ts;
 		
 	ts = localtime(&res_time);
 	strftime(timestr, BUFSIZE, "%a, %d %b %Y %T %z", ts);	
 	
-	sprintf(response_body, "<html>"\
-							"<head></head>"\
-							"<body>Uhrzeit: %s"\
-							"String 3</body></html>"
+	// read html from file
+	
+	sprintf(response_body, 	"<html>"\
+								"<head>"\
+									"<title>Server file-o-res.c - Uhrzeit</title>"
+								"</head>"\
+								"<body>"\
+									"Uhrzeit: %s"\
+								"</body>"\
+							"</html>"
 			, timestr);
 	
 	//printf("Length: %lu\n", strlen(response_body));
@@ -248,7 +237,7 @@ int handle_client(int sd, char * response_file,struct sockaddr_in * from_client,
 	
 	// Response Header und Body in die socket schreiben
 	write_res_header(sd, current_time );
-	write_res_body(sd, current_time );
+	write_res_body(sd, current_time, response_file );
 	
 	
 	// Flush socket - Alles durchschreiben
