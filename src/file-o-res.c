@@ -147,13 +147,11 @@ static int write_res_header(int sd, time_t res_time)
 {   // \\ backslash
     char res_header;
     char timestr[BUFSIZE];
-	
-	char * status_line = "HTTP/1.1 200 OK\r\n";
 	char header[BUFSIZE];
     
-//    res_header = "HTTP/1.1 200 OK \r\n"; // CRLF \r\n
-//    res_header[18] = "Date: ";
-    
+	// write status line for http response
+	char * status_line = "HTTP/1.1 200 OK\r\n";
+	
     struct tm *ts;
 	ts = localtime(&res_time);
 	strftime(timestr, BUFSIZE, "%a, %d %b %Y %T %z", ts);
@@ -171,28 +169,10 @@ static int write_res_header(int sd, time_t res_time)
 	
     if ( err < 0 ){
 		printf("[ERR #%d] Error when writing header. Exiting.\n", err);
-        exit(err); // good luck searching the unexpected exit point
+        exit(err); 
 	}
 	
 	return 0;
-	
-	/*
-	char response_body[BUFSIZE];
-	char  timestr[BUFSIZE];
-	struct tm *ts;
-		
-	ts = localtime(&res_time);
-	strftime(timestr, BUFSIZE, "%a, %d %b %Y %T %z", ts);	
-	
-	sprintf(response_body, "HTTP/1.1 200 OK\r\n"\
-							"Length: 87\r\n"\
-							"Date: %s\r\n"\
-							"\r\n"
-			, timestr);
-			
-	write(sd, response_body, strlen(response_body)); 
-	return 0;	
-	*/
 }
 
 /* PURPOSE: Schreibe einen HTTP response body in das socket sd */
