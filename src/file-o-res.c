@@ -165,8 +165,6 @@ static int write_res_header(int sd, time_t res_time, int content_length)
 					     "%s\r\n"\
 						 "\r\n"
 			,status_line, header);
-
-    printf("res_header '%s'\n", res_header);
     
     // write header & time to Socket
     int err = write(sd, res_header, strlen(res_header));
@@ -200,7 +198,6 @@ static int get_res_body(int sd, time_t res_time, char * template_file, char* out
 	
 	
 	sprintf(out_str, template , timestr);
-	printf("%s\n", out_str);
 	return 0;	
 }
 
@@ -235,9 +232,7 @@ int handle_client(int sd, char * response_file,struct sockaddr_in * from_client,
 	
 	// Response Header und Body in die socket schreiben
 	get_res_body(sd, current_time, response_file, response_body);
-	printf("%s\n", response_body);
 	write_res_header(sd, current_time, strlen(response_body));
-	printf("%s\n", response_body);
 	write(sd, response_body, strlen(response_body));
 	
 	// Flush socket - Alles durchschreiben
