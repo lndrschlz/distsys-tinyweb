@@ -22,7 +22,7 @@ Schulz, Reutebuch, Polkehn
 #include <sys/stat.h>
 #include <fcntl.h>
 
-#define BUFSIZE 100
+#define BUFSIZE 1000
 
 static int accept_clients(int sd, char * response_file);
 static int handle_client(int sd, char * response_file, struct sockaddr_in * from_client, int req_no);
@@ -145,7 +145,7 @@ static int accept_clients(int sd, char * response_file)
 /* PURPOSE: Schreibe einen HTTP 1.1 Header in das socket sd */
 static int write_res_header(int sd, time_t res_time, int content_length)
 {   // \\ backslash
-    char res_header;
+    char res_header[BUFSIZE];
     char timestr[BUFSIZE];
 	char header[BUFSIZE];
     
@@ -161,13 +161,15 @@ static int write_res_header(int sd, time_t res_time, int content_length)
 					timestr, content_length);
 	
 	// concatenate timestr to res_header
-    sprintf(&res_header, "%s"\
+    sprintf(res_header, "%s"\
 					     "%s\r\n"\
 						 "\r\n"
-			,(char *)status_line, (char *)header);
+			,status_line, header);
+
+    printf("res_header '%s'\n", res_header);
     
     // write header & time to Socket
-    int err = write(sd, &res_header, strlen(&res_header));
+    int err = write(sd, res_header, strlen(res_header));
 	
     if ( err < 0 ){
 		printf("[ERR #%d] Error when writing header. Exiting.\n", err);
@@ -179,25 +181,26 @@ static int write_res_header(int sd, time_t res_time, int content_length)
 
 
 /* PURPOSE: Schreibe einen HTTP response body in das socket sd */
-static char * get_res_body(int sd, time_t res_time, char * template_file, char* out_str)
+static int get_res_body(int sd, time_t res_time, char * template_file, char* out_str)
 {	
 	char  timestr[BUFSIZE];
+	char  template[BUFSIZE] = "";
+	char buf[BUFSIZE];
 	struct tm *ts;
 		
 	ts = localtime(&res_time);
 	strftime(timestr, BUFSIZE, "%a, %d %b %Y %T %z", ts);	
 	
-	sprintf(out_str, 	"<html>"\
-								"<head>"\
-									"<title>Server file-o-res.c - Uhrzeit</title>"
-								"</head>"\
-								"<body>"\
-									"Uhrzeit: %s"\
-									"Test"\
-								"</body>"\
-							"</html>"
-			, timestr);
+	int fd = open(template_file, O_RDONLY);
+	int cc;
+	while ((cc=read(fd, buf, BUFSIZE)))
+	{
+		strcat(template, buf);
+	}
 	
+	
+	sprintf(out_str, template , timestr);
+	printf("%s\n", out_str);
 	return 0;	
 }
 
@@ -232,7 +235,9 @@ int handle_client(int sd, char * response_file,struct sockaddr_in * from_client,
 	
 	// Response Header und Body in die socket schreiben
 	get_res_body(sd, current_time, response_file, response_body);
+	printf("%s\n", response_body);
 	write_res_header(sd, current_time, strlen(response_body));
+	printf("%s\n", response_body);
 	write(sd, response_body, strlen(response_body));
 	
 	// Flush socket - Alles durchschreiben
