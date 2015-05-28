@@ -36,11 +36,11 @@ connect_tcp(const char *host, unsigned short port)
   sin.sin_family = AF_INET;
   sin.sin_port = htons(port);
 
-  if ((getaddrinfo(host, char_port, NULL, &result)) != 0) {
+  if ((getaddrinfo(host, char_port, NULL, &result)) == 0) {
     memcpy(&sin.sin_addr, result->ai_addr, result->ai_addrlen);
   } else if ( (sin.sin_addr.s_addr = inet_addr(host)) == INADDR_NONE ) {
     fprintf(stderr, "can't get \"%s\" host entry\n", host);
-    perror("ERROR: client gethostbyname() ");
+    perror("ERROR: client getaddrinfo() not zero");
     return -1;
   } /* end if */
 
