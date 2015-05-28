@@ -1,5 +1,5 @@
 # Makefile für Webserver Laboruebungen
-CFLAGS=-Wall -Werror -Wunreachable-code -Wswitch-default -std=gnu99 -pedantic -O2
+CFLAGS=-Wall -Werror -Wunreachable-code -Wswitch-default -std=gnu99 -pedantic -O2 -g
 CC=gcc
 LIBPATH=../lib/libsockets
 
