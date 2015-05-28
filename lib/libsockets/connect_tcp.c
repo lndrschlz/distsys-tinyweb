@@ -28,9 +28,10 @@ connect_tcp(const char *host, unsigned short port)
   int retcode;
   
   struct addrinfo *result;      /* pointer to struct used by getaddrinfo */
-  char* char_port = "80";
-  _ultoa_s(port,char_port,sizeof(char_port),10); /* convert ushort to char*/
-
+  char char_port[5];
+  /* convert ushort to char*/
+  sprintf(char_port, "%u", port);
+  
   memset(&sin, 0, sizeof(sin));
   sin.sin_family = AF_INET;
   sin.sin_port = htons(port);
