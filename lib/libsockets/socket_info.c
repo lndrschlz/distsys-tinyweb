@@ -16,6 +16,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 
+#define BUFSIZE 1000
 
 #include "socket_info.h"
 
@@ -23,15 +24,14 @@ void
 get_socket_info(struct sockaddr_in from_sa, struct socket_info *si)
 {
   struct hostent *from_he;
+  char buf[BUFSIZE];
 
   from_he = gethostbyaddr((char *)&from_sa.sin_addr,
 			  sizeof(from_sa.sin_addr),
 			  AF_INET);
-
-  strncpy(si->name,
-	  (from_he) ? from_he->h_name : inet_ntoa(from_sa.sin_addr),
-	  sizeof(si->name));
-  strncpy(si->addr, inet_ntoa(from_sa.sin_addr), sizeof(si->addr));
+  inet_ntop(AF_INET6,&from_sa.sin_addr,buf, sizeof(buf));
+  strncpy(si->name, (from_he) ? from_he->h_name : buf,  sizeof(si->name));
+  strncpy(si->addr, buf, sizeof(si->addr));
   si->port = ntohs(from_sa.sin_port);
 } /* end of get_socket_info */
 
