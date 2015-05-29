@@ -13,7 +13,6 @@
 
 #include <connect_tcp.h>
 
-
 #define BUFSIZE 1000
 
 int main(int argc, char **argv)
@@ -41,17 +40,25 @@ int main(int argc, char **argv)
 	{
 		if (cc < 0)
 		{
-			fprintf(stderr, "Error: %d when reading file!\n", cc);
+			fprintf(stderr, "Error: %d when reading file!\n", cc); 
 			exit(1);
 		}
 		
-		write(sd, buf, cc);
+		int err = write(sd, buf, cc);
+		if ( err < 0 ){
+		    printf("[ERR #%d] Error when writing buffer. Exiting.\n", err);
+            exit(err); 
+	    }
 	}
 	
 	close(fd);
 	
 	// Terminate the request
-	write(sd, '\0', 1);
+	int err = write(sd, '\0', sizeof(char));
+	if ( err < 0 ){
+		printf("[ERR #%d] Error when writing request-buffer. Exiting.\n", err);
+        exit(err); 
+	}
 	
 	printf("[INFO] Waiting for server response\n");
 	

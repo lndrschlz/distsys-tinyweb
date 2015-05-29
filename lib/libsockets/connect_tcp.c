@@ -37,7 +37,8 @@ connect_tcp(const char *host, unsigned short port)
   sin.sin_port = htons(port);
 
   if ((getaddrinfo(host, char_port, NULL, &result)) == 0) {
-    memcpy(&sin.sin_addr, result->ai_addr, result->ai_addrlen);
+    /* fprintf(stderr, "sizeof: %d\n", sizeof(((struct sockaddr_in*)result->ai_addr)->sin_addr)); */
+    memcpy(&sin.sin_addr, &((struct sockaddr_in*)result->ai_addr)->sin_addr, sizeof(((struct sockaddr_in*)result->ai_addr)->sin_addr)); 
   } else if ( (sin.sin_addr.s_addr = inet_addr(host)) == INADDR_NONE ) {
     fprintf(stderr, "can't get \"%s\" host entry\n", host);
     perror("ERROR: client getaddrinfo() not zero");
