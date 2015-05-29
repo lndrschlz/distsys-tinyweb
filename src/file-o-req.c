@@ -53,13 +53,6 @@ int main(int argc, char **argv)
 	
 	close(fd);
 	
-	// Terminate the request
-	int err = write(sd, '\0', sizeof(char));
-	if ( err < 0 ){
-		printf("[ERR #%d] Error when writing request-buffer. Exiting.\n", err);
-        exit(err); 
-	}
-	
 	printf("[INFO] Waiting for server response\n");
 	
 	// Loop and read the server response, write response to stdout
