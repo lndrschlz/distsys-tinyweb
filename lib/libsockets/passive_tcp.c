@@ -23,15 +23,23 @@
 unsigned short
 get_port_from_name(const char *service)
 {
-  struct servent  *pse;      /* pointer to service information entry */
-  unsigned short port;
+  struct addrinfo *servinfo;    /* pointer to service information entry */
+  unsigned short port;      
+  int s;                        /* return value for getaddrinfo */
 
   /*
    * Map service name to port number
-   */
-  pse = getservbyname(service, "tcp");
-  if (pse != 0) {
-    port = ntohs((unsigned short)pse->s_port);
+   
+  pse = getservbyname(service, "tcp");*/
+  struct addrinfo hints;
+  hints.ai_protocol = IPPROTO_TCP;
+  hints.ai_family = AF_UNSPEC;    /* Allow IPv4 or IPv6 */
+  hints.ai_socktype = SOCK_STREAM; /* Datagram socket */
+  hints.ai_flags = AI_PASSIVE;
+  
+  s = getaddrinfo(NULL, service, &hints, &servinfo);
+  if (s == 0) {
+    port = ntohs(((struct sockaddr_in*)servinfo->ai_addr)->sin_port);
   } else {
     port = (unsigned short)atoi(service);
   } /* end if */

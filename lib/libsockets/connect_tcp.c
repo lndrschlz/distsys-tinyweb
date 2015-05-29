@@ -22,21 +22,26 @@
 int
 connect_tcp(const char *host, unsigned short port)
 {
-  struct hostent   *phe;        /* pointer to host information entry	 */
   struct protoent  *ppe;        /* pointer to protocol information entry */
   struct sockaddr_in sin;       /* an Internet endpoint address		 */
   int s;                        /* socket descriptor                     */
   int retcode;
-
+  
+  struct addrinfo *result;      /* pointer to struct used by getaddrinfo */
+  char char_port[5];
+  /* convert ushort to char*/
+  sprintf(char_port, "%u", port);
+  
   memset(&sin, 0, sizeof(sin));
   sin.sin_family = AF_INET;
   sin.sin_port = htons(port);
 
-  if ((phe = gethostbyname(host)) != 0) {
-    memcpy(&sin.sin_addr, phe->h_addr, phe->h_length);
+  if ((getaddrinfo(host, char_port, NULL, &result)) == 0) {
+    /* fprintf(stderr, "sizeof: %d\n", sizeof(((struct sockaddr_in*)result->ai_addr)->sin_addr)); */
+    memcpy(&sin.sin_addr, &((struct sockaddr_in*)result->ai_addr)->sin_addr, sizeof(((struct sockaddr_in*)result->ai_addr)->sin_addr)); 
   } else if ( (sin.sin_addr.s_addr = inet_addr(host)) == INADDR_NONE ) {
     fprintf(stderr, "can't get \"%s\" host entry\n", host);
-    perror("ERROR: client gethostbyname() ");
+    perror("ERROR: client getaddrinfo() not zero");
     return -1;
   } /* end if */
 
