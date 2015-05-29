@@ -233,12 +233,13 @@ int handle_client(int sd, char * response_file,struct sockaddr_in * from_client,
 	// Response Header und Body in die socket schreiben
 	get_res_body(sd, current_time, response_file, response_body);
 	write_res_header(sd, current_time, strlen(response_body));
-	
+
 	int err = write(sd, response_body, strlen(response_body));
 	
-	if ( err < 0 ){
-		printf("[ERR #%d] Error in handle_client. Exiting.\n", err);
-        exit(err); 
+	if (err < 0 ) // Error 
+	{
+		printf("[ERROR #%d] Error when writing response body!\n", err );
+		exit(err);
 	}
 	
 	// Flush socket - Alles durchschreiben
