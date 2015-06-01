@@ -21,8 +21,10 @@ Schulz, Reutebuch, Polkehn
 #include <string.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <socket_io.h>
 
 #define BUFSIZE 1000
+#define WRITE_TIMEOUT 1000
 
 static int accept_clients(int sd, char * response_file);
 static int handle_client(int sd, char * response_file, struct sockaddr_in * from_client, int req_no);
@@ -167,7 +169,7 @@ static int write_res_header(int sd, time_t res_time, int content_length)
 			,status_line, header);
     
     // write header & time to Socket
-    int err = write(sd, res_header, strlen(res_header));
+    int err = write_to_socket(sd, res_header, strlen(res_header), WRITE_TIMEOUT);
 	
     if ( err < 0 ){
 		printf("[ERR #%d] Error when writing header. Exiting.\n", err);
@@ -233,8 +235,8 @@ int handle_client(int sd, char * response_file,struct sockaddr_in * from_client,
 	// Response Header und Body in die socket schreiben
 	get_res_body(sd, current_time, response_file, response_body);
 	write_res_header(sd, current_time, strlen(response_body));
-
-	int err = write(sd, response_body, strlen(response_body));
+	
+	int err = write_to_socket(sd, response_body, strlen(response_body), WRITE_TIMEOUT);
 	
 	if (err < 0 ) // Error 
 	{
