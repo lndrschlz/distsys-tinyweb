@@ -93,7 +93,11 @@ static int accept_clients(int sd, char * response_file)
 		{	
 			// Vaterprozess
 			// Accepting socket schließen
-			close(nsd);
+			int nsd_err = close(nsd);
+			if ( nsd_err < 0 ) {
+	            printf("Error #%d: close of socket descriptor failed.\n", nsd_err);
+	            exit(nsd_err);
+	        }
 			
 			// Info ausgeben			
 			if (child_pid < 0){
@@ -113,7 +117,11 @@ static int accept_clients(int sd, char * response_file)
 			time_t start_time = time(NULL);	
 			
 			// Listening socket schließen
-			close(sd);
+			int sd_err = close(sd);
+			if ( sd_err < 0 ) {
+	            printf("Error #%d: close of socket descriptor failed.\n", sd_err);
+	            exit(sd_err);
+	        }
 			
 			int ret;
 			struct rusage usage;
@@ -248,7 +256,11 @@ int handle_client(int sd, char * response_file,struct sockaddr_in * from_client,
 	shutdown(sd, SHUT_RDWR);
 	
 	// Verbindung schließen
-	close(sd);
+	int sd_err = close(sd);
+	if ( sd_err < 0 ) {
+	   printf("Error #%d: close of socket descriptor failed.\n", sd_err);
+	   exit(sd_err);
+	}
 
 	return(sd);	
 }	
