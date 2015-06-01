@@ -10,10 +10,12 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <socket_io.h>
 
 #include <connect_tcp.h>
 
 #define BUFSIZE 1000
+#define WRITE_TIMEOUT 1000
 
 int main(int argc, char **argv)
 {
@@ -40,11 +42,11 @@ int main(int argc, char **argv)
 	{
 		if (cc < 0)
 		{
-			fprintf(stderr, "Error: %d when reading file!\n", cc); 
+			fprintf(stderr, "[ERR #%d] when reading file!\n", cc); 
 			exit(1);
 		}
 		
-		int err = write(sd, buf, cc);
+		int err = write_to_socket(sd, buf, cc, WRITE_TIMEOUT);
 		if ( err < 0 ){
 		    printf("[ERR #%d] Error when writing buffer. Exiting.\n", err);
             exit(err); 
@@ -53,7 +55,7 @@ int main(int argc, char **argv)
 	
 	int fd_err = close(fd);
 	if ( fd_err < 0 ) {
-	    printf("Error #%d: close of file descriptor failed.\n", fd_err);
+	    printf("[ERR #%d] close of file descriptor failed.\n", fd_err);
 	    exit(fd_err);
 	}
 	
@@ -64,7 +66,7 @@ int main(int argc, char **argv)
 	{
 		if (cc < 0)
 		{
-			fprintf(stderr, "Error: %d when reading server response!\n", cc);
+			fprintf(stderr, "[ERR #%d] when reading server response!\n", cc);
 			exit(1);
 		}
 		
@@ -74,7 +76,7 @@ int main(int argc, char **argv)
 	// Close the socket
 	int sd_err = close(sd);
 	if ( sd_err < 0 ) {
-	    printf("Error #%d: close of socket descriptor failed.\n", sd_err);
+	    printf("[ERR #%d] close of socket descriptor failed.\n", sd_err);
 	    exit(sd_err);
 	}
 	
