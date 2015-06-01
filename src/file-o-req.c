@@ -51,7 +51,11 @@ int main(int argc, char **argv)
 	    }
 	}
 	
-	close(fd);
+	int fd_err = close(fd);
+	if ( fd_err < 0 ) {
+	    printf("Error #%d: close of file descriptor failed.\n", fd_err);
+	    exit(fd_err);
+	}
 	
 	printf("[INFO] Waiting for server response\n");
 	
@@ -68,7 +72,12 @@ int main(int argc, char **argv)
 	}
 		
 	// Close the socket
-	close(sd);
+	int sd_err = close(sd);
+	if ( sd_err < 0 ) {
+	    printf("Error #%d: close of socket descriptor failed.\n", sd_err);
+	    exit(sd_err);
+	}
+	
 	printf("[INFO] Connection closed.\n");
 	
 	// Exit the programmn
