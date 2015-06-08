@@ -40,6 +40,8 @@
 
 #include "safe_print.h"
 #include "sem_print.h"
+#include <passive_tcp.h>
+#include "client_handling.h"
 
 
 // Must be true for the server accepting clients,
@@ -255,9 +257,18 @@ main(int argc, char *argv[])
     // here, as an example, show how to interact with the
     // condition set by the signal handler above
     printf("[%d] Starting server '%s'...\n", getpid(), my_opt.progname);
+    
+    int accepting_socket = passive_tcp(my_opt.server_port, 5);
+    struct sockaddr_in from_client;
+    
     server_running = true;
     while(server_running) {
-        pause();
+        socklen_t from_client_len  = sizeof(from_client);
+        
+        // Accept new Client
+        int listening_socket = accept(accepting_socket, (struct sockaddr *) &from_client, &from_client_len);
+        handle_client(listening_socket);
+        
     } /* end while */
 
     printf("[%d] Good Bye...\n", getpid());

@@ -1,5 +1,0 @@
-This is a request to a server!
-With a second line,
-and a third.
-
-Great. :)
