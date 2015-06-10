@@ -1,1 +1,1 @@
-int handle_client(int sd);
+int accept_client(int sd, int nsd);

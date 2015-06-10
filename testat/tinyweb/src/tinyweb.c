@@ -149,6 +149,8 @@ get_options(int argc, char *argv[], prog_options_t *opt)
                     fprintf(stderr, "Cannot resolve service '%s': %s\n", optarg, gai_strerror(err));
                     return EXIT_FAILURE;
                 } /* end if */
+                // copy portnumber to struct opt
+                opt->server_port = (int) ntohs(((struct sockaddr_in*) opt->server_addr->ai_addr)->sin_port);
                 break;
             case 'd':
                 // 'optarg contains root directory */
@@ -261,13 +263,16 @@ main(int argc, char *argv[])
     int accepting_socket = passive_tcp(my_opt.server_port, 5);
     struct sockaddr_in from_client;
     
+    // hier socket anlegen und in die while schleiße zu übergeben
+    
     server_running = true;
     while(server_running) {
-        socklen_t from_client_len  = sizeof(from_client);
+        socklen_t from_client_len = sizeof(from_client);
         
         // Accept new Client
         int listening_socket = accept(accepting_socket, (struct sockaddr *) &from_client, &from_client_len);
-        handle_client(listening_socket);
+        
+        accept_client(accepting_socket, listening_socket);
         
     } /* end while */
 
