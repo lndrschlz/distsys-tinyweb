@@ -75,7 +75,11 @@ sig_handler(int sig)
 static void
 print_usage(const char *progname)
 {
-  fprintf(stderr, "Usage: %s options\n", progname);
+  fprintf(stderr, "Usage: %s options\n" \
+                  " -p port \t defines local port on which the server accept requests\n" \
+                  " -f file \t the file where logs will be written in (type \"-\" for stdout\n" \
+                  " -d dir \t ?? \n" \
+                  " -h \t\t prints out this quick help\n", progname);
   // TODO: Print the program options
 } /* end of print_usage */
 
