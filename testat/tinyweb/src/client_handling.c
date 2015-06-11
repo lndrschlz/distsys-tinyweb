@@ -83,7 +83,7 @@ int accept_client(int sd, int nsd)
 		time_t end_time;
 		
 		// Client bearbeiten
-		ret = 0;//handle_client(nsd, response_file, &from_client, req_no);
+		ret = 0;//handle_client(nsd);
 		
 		// Ressourcenverbrauch berechnen
 		end_time = time(NULL);
@@ -102,3 +102,5 @@ int accept_client(int sd, int nsd)
     
 	return 0;	
 }
+
+int handle_client(int sd, )
