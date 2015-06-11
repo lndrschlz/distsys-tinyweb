@@ -1,7 +1,9 @@
-//
-// TODO: Include your module header here
-//
-
+/*
+ * module name:         tinyweb.h
+ * author/modifier:     Jonas Pohlken, Leander Schulz, Christian Reutebuch
+ * purpose:             headerfile that defines several structs for the 'tinyweb' webserver
+ *
+ */
 #ifndef _TINYWEB_H
 #define _TINYWEB_H
 

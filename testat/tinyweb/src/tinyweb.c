@@ -6,9 +6,12 @@
  * Author:  Ralf Reutemann
  *
  *===================================================================*/
-//
-// TODO: Include your module header here
-//
+/*
+ * module name:         tinyweb.h
+ * author/modifier:     Jonas Pohlken, Leander Schulz, Christian Reutebuch
+ * purpose:             main file for 'tinyweb' webserver
+ *
+ */
 
 
 #include <stdio.h>
