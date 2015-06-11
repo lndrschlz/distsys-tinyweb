@@ -103,4 +103,47 @@ int accept_client(int sd, int nsd)
 	return 0;	
 }
 
-int handle_client(int sd, )
+struct request {
+	method
+	content-length
+}
+
+struct response {
+	
+}
+
+int handle_client(int sd)
+{
+	// request einlesen (read...)
+	
+	// request parsen -> request 
+	//int err = parse_request(&request, request_str);
+	
+	request.methode = GET
+	
+	if (err < 0 )
+	{
+		response.status = 
+	}
+	else
+	{
+		
+	}
+	
+	
+	
+	send_response(response, sd);
+}
+
+int send_response(reseponse, sd)
+{
+	// status zeile schreiben
+	// write(...)
+	
+	// header
+	// if header != ""
+	// write(...)
+	
+	// if response.body != ""
+	// 
+}
