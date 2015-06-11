@@ -160,6 +160,9 @@ int send_response(http_res_t * response, int sd)
 	}
 	
 	// TRY WITH LIST
+	// 
+	//
+	//
 	
 	
 	
@@ -173,7 +176,7 @@ int send_response(http_res_t * response, int sd)
 int handle_client(int sd)
 {	 
 	http_req_t req;
-	http_res_t res;
+	http_res_t *res = malloc(1000);                 // check up needed size later
 	char req_string[BUFSIZE];
 	
 	int err = parse_request(&req, req_string);
@@ -188,8 +191,18 @@ int handle_client(int sd)
 	
 	//request.methode = GET
 	
+	http_header_line_entry_t my_date;
+	my_date.name = HTTP_HEADER_LINE_DATE;
+	my_date.value = "Mein Timestamp";
 	
-	send_response(&res, sd);
+	http_header_line_entry_t my_server;
+	my_server.name = HTTP_HEADER_LINE_SERVER;
+	my_server.value = "polkehn.c-gurus.com";
+	
+	http_header_line_entry_t my_headers[] = { my_date, my_server }; // besteht aus { name, value}
+	*res->headerlist = my_headers;
+	
+	send_response(res, sd);
 	return 0;
 }
 

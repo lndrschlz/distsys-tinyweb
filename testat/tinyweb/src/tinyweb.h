@@ -51,7 +51,7 @@ typedef struct http_req {
  */
 typedef struct http_res {
     http_status_t               status;
-    http_header_line_entry_t    headerlist[];
+    http_header_line_entry_t    *headerlist[];
 } http_res_t;
 
 #endif
