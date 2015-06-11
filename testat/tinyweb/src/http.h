@@ -6,9 +6,9 @@
  * Author:  Ralf Reutemann
  *
  *===================================================================*/
-
 #ifndef _HTTP_H
 #define _HTTP_H
+
 
 typedef enum http_method {
     HTTP_METHOD_GET = 0,
