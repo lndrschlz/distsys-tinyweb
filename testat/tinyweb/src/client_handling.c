@@ -8,7 +8,6 @@
  *
  *===================================================================*/
  
-#include "client_handling.h"
  
 #include <stdio.h>
 #include <stdlib.h>
@@ -27,6 +26,9 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <socket_io.h>
+
+#include <tinyweb.h>
+#include <client_handling.h>
 
 #define BUFSIZE 1000
 #define WRITE_TIMEOUT 1000
@@ -103,39 +105,12 @@ int accept_client(int sd, int nsd)
 	return 0;	
 }
 
-struct request {
-	method
-	content-length
-}
-
-struct response {
-	
-}
-
-int handle_client(int sd)
+int parse_request(http_req_t * request, char *req_string)
 {
-	// request einlesen (read...)
-	
-	// request parsen -> request 
-	//int err = parse_request(&request, request_str);
-	
-	request.methode = GET
-	
-	if (err < 0 )
-	{
-		response.status = 
-	}
-	else
-	{
-		
-	}
-	
-	
-	
-	send_response(response, sd);
-}
+	return 0;
+}	
 
-int send_response(reseponse, sd)
+int send_response(http_res_t * response,int sd)
 {
 	// status zeile schreiben
 	// write(...)
@@ -146,4 +121,29 @@ int send_response(reseponse, sd)
 	
 	// if response.body != ""
 	// 
+	return 0;
 }
+
+int handle_client(int sd)
+{	 
+	http_req_t req;
+	http_res_t res;
+	char req_string[BUFSIZE];
+	
+	int err = parse_request(&req, req_string);
+	if (err < 0)
+	{
+		// do stuff
+	}
+	// request einlesen (read...)
+	
+	// request parsen -> request 
+	//int err = parse_request(&request, request_str);
+	
+	//request.methode = GET
+	
+	
+	send_response(&res, sd);
+	return 0;
+}
+
