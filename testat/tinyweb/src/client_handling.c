@@ -86,7 +86,7 @@ int accept_client(int sd, int nsd)
 		time_t end_time;
 		
 		// Client bearbeiten
-		ret = 0;//handle_client(nsd);
+		ret = handle_client(sd);
 		
 		// Ressourcenverbrauch berechnen
 		end_time = time(NULL);
