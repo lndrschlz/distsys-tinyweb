@@ -103,4 +103,4 @@ int accept_client(int sd, int nsd)
 	return 0;	
 }
 
-int handle_client(int sd, )
+// int handle_client(int sd)
