@@ -131,10 +131,11 @@ int send_response(http_res_t * response, int sd)
 	if ( err < 0 ) {
 	    print_log("Error: Unable to write status_line to socket.\n");
 	}
-	
+
+/*	
 	// get date and write date to socket
 	char* date = "Date: ";
-	//strcat(date, response->date);
+	strcat(date, response->date);
 	strcat(date, "\r\n");
 	err = write_to_socket(sd, date, strlen(date), WRITE_TIMEOUT);
 	if ( err < 0 ) {
@@ -143,7 +144,7 @@ int send_response(http_res_t * response, int sd)
 	
 	// write server to socket
 	char* server = "Server: ";
-	//strcat(server, response->server);
+	strcat(server, response->server);
 	strcat(server, "\r\n");
 	err = write_to_socket(sd, server, strlen(server), WRITE_TIMEOUT);
 	if ( err < 0 ) {
@@ -152,13 +153,14 @@ int send_response(http_res_t * response, int sd)
 	
 	// write last_modified to socket-write
 	char* lastmodified = "Last-Modified: ";
-	//strcat(lastmodified, response->last_modified);
+	strcat(lastmodified, response->last_modified);
 	strcat(lastmodified, "\r\n");
 	err = write_to_socket(sd, lastmodified, strlen(lastmodified), WRITE_TIMEOUT);
 	if ( err < 0 ) {
 	    print_log("Error: Unable to write lastmodified to socket.\n");
 	}
-	
+*/
+
 	// TRY WITH LIST
 	// "Date" == response->headerlist[0].value
 	//
@@ -166,13 +168,25 @@ int send_response(http_res_t * response, int sd)
 	// get http status code and text
     // http_status_entry_t status = http_status_list[response->status];
 	
-	char* headerString = http_header_list[response->headerlist[0]->name];
-	print_log("Name: %s, Value: %s\n", headerString, response->headerlist[0]->value); // get the header's value
-	printf("Name: %s, Value: %s\n", headerString, response->headerlist[0]->value); // get the header's value
-	safe_printf("Name: %s, Value: %s\n", headerString, response->headerlist[0]->value); // get the header's value
+	char* header = http_header_list[response->headerlist[0]->name];
+	print_log("Name: %s, Value: %s\n", header, response->headerlist[0]->value); // get the header's value
+	printf("Name: %s, Value: %s\n", header, response->headerlist[0]->value); // get the header's value
+	safe_printf("Name: %s, Value: %s\n", header, response->headerlist[0]->value); // get the header's value
 	
-	
-	
+	// parse Date
+	for(int i=0; i<2; i++) // TODO: find a better way than i<2; 
+	{
+	    char line[BUFSIZE];
+	    char* headerString = http_header_list[response->headerlist[0]->name];
+	    strcat(line, headerString);
+	    strcat(line, ": ");
+	    strcat(line, response->headerlist[0]->value);
+	    strcat(line, "\r\n");
+	    err = write_to_socket(sd, line, strlen(line), WRITE_TIMEOUT);
+	    if ( err < 0 ) {
+	        print_log("Error: Unable to write %s to socket.\n", headerString);
+	    }
+	}
 	
 	
 	// if response.body != ""
