@@ -160,9 +160,16 @@ int send_response(http_res_t * response, int sd)
 	}
 	
 	// TRY WITH LIST
-	// 
+	// "Date" == response->headerlist[0].value
 	//
 	//
+	// get http status code and text
+    // http_status_entry_t status = http_status_list[response->status];
+	
+	char* headerString = http_header_list[response->headerlist[0]->name];
+	print_log("Name: %s, Value: %s\n", headerString, response->headerlist[0]->value); // get the header's value
+//	printf("Name: %s, Value: %s\n", headerString, response->headerlist[0]->value); // get the header's value
+//	safe_printf("Name: %s, Value: %s\n", headerString, response->headerlist[0]->value); // get the header's value
 	
 	
 	
