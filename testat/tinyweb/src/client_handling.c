@@ -30,6 +30,9 @@
 #include <tinyweb.h>
 #include <client_handling.h>
 #include <request_parser.h>
+#include "http.h"
+#include "safe_print.h"
+#include "sem_print.h"
 
 #define BUFSIZE 1000
 #define WRITE_TIMEOUT 1000
@@ -106,14 +109,61 @@ int accept_client(int sd, int nsd)
 	return 0;	
 }
 
-int send_response(http_res_t * response,int sd)
+int send_response(http_res_t * response, int sd)
 {
-	// status zeile schreiben
-	// write(...)
+    // error code for socket-write
+    int err = 0;
+    
+	// get http status code and text
+    http_status_entry_t status = http_status_list[response->status];
+    char  status_code[3];
+	sprintf(status_code, "%u", status.code);
 	
-	// header
-	// if header != ""
-	// write(...)
+	// parse http status line
+	char* status_line = "HTTP/1.1 ";
+	strcat(status_line, status_code);
+	strcat(status_line, " ");
+	strcat(status_line, status.text);
+	strcat(status_line, "\r\n");
+	
+	// write http status line to socket 
+	err = write_to_socket(sd, status_line, strlen(status_line), WRITE_TIMEOUT);
+	if ( err < 0 ) {
+	    print_log("Error: Unable to write status_line to socket.\n");
+	}
+	
+	// get date and write date to socket
+	char* date = "Date: ";
+	//strcat(date, response->date);
+	strcat(date, "\r\n");
+	err = write_to_socket(sd, date, strlen(date), WRITE_TIMEOUT);
+	if ( err < 0 ) {
+	    print_log("Error: Unable to write date to socket.\n");
+	}
+	
+	// write server to socket
+	char* server = "Server: ";
+	//strcat(server, response->server);
+	strcat(server, "\r\n");
+	err = write_to_socket(sd, server, strlen(server), WRITE_TIMEOUT);
+	if ( err < 0 ) {
+	    print_log("Error: Unable to write server to socket.\n");
+	}
+	
+	// write last_modified to socket-write
+	char* lastmodified = "Last-Modified: ";
+	//strcat(lastmodified, response->last_modified);
+	strcat(lastmodified, "\r\n");
+	err = write_to_socket(sd, lastmodified, strlen(lastmodified), WRITE_TIMEOUT);
+	if ( err < 0 ) {
+	    print_log("Error: Unable to write lastmodified to socket.\n");
+	}
+	
+	// TRY WITH LIST
+	
+	
+	
+	
 	
 	// if response.body != ""
 	// 
