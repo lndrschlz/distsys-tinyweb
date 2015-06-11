@@ -30,6 +30,7 @@
 #include <tinyweb.h>
 #include <client_handling.h>
 #include <request_parser.h>
+#include <safe_print.h>
 
 #define BUFSIZE 1000
 #define WRITE_TIMEOUT 1000
@@ -124,20 +125,24 @@ int handle_client(int sd)
 {	 
 	http_req_t req;
 	http_res_t res;
-	char req_string[BUFSIZE];
+	//char req_string[BUFSIZE];
+	
+	char * req_string = "GET /test/resource/test.jpg HTTP/1.1\r\nHeader:Test\r\n\r\n";
 	
 	int err = parse_request(&req, req_string);
 	if (err < 0)
 	{
 		// do stuff
 	}
+	
+	safe_printf("Method: %s\nResource: %s\n", http_method_list[req.method].name, req.resource);
+	
 	// request einlesen (read...)
 	
 	// request parsen -> request 
 	//int err = parse_request(&request, request_str);
 	
 	//request.methode = GET
-	
 	
 	send_response(&res, sd);
 	return 0;
