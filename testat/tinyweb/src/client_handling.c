@@ -29,6 +29,7 @@
 
 #include <tinyweb.h>
 #include <client_handling.h>
+#include <request_parser.h>
 
 #define BUFSIZE 1000
 #define WRITE_TIMEOUT 1000
@@ -104,11 +105,6 @@ int accept_client(int sd, int nsd)
     
 	return 0;	
 }
-
-int parse_request(http_req_t * request, char *req_string)
-{
-	return 0;
-}	
 
 int send_response(http_res_t * response,int sd)
 {
