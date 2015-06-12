@@ -35,7 +35,7 @@
 #include "sem_print.h"
 
 #define BUFSIZE 1000
-#define WRITE_TIMEOUT 1000
+#define WRITE_TIMEOUT 10
 
 #define _DEBUG
  
@@ -116,11 +116,13 @@ int send_response(http_res_t * response, int sd)
 	// get http status code and text
 	int index = response->status;
     http_status_entry_t status = http_status_list[index];
-    char  status_code[3];
+    char  status_code[50];
 	sprintf(status_code, "%u", status.code);
 	
+	printf("[INFO] STATUS CODE: %s\n", status_code);
+	
 	// parse http status line
-	char status_line[200];
+	char status_line[10];
 	strcpy(status_line, "HTTP/1.1 ");
 	//char* status_line = "HTTP/1.1 ";
 	strcat(status_line, status_code);
@@ -141,21 +143,22 @@ int send_response(http_res_t * response, int sd)
 */
 	
 	// parse http header line by line
-	for(int i=0; i<2; i++) // TODO: find a better way than i<2; 
+	for(int i=0; i<3; i++) // TODO: find a better way than i<3; 
 	{
 	
 	    char line[BUFSIZE];
-	    char* headerString = http_header_list[response->headerlist[0]->name];
+	    char* headerString = http_header_list[response->headerlist[i]->name];
+	    char* headerValue  = response->headerlist[i]->value;
 	    strcat(line, headerString);
 	    strcat(line, ": ");
-	    strcat(line, response->headerlist[0]->value);
+	    strcat(line, headerValue);
 	    strcat(line, "\r\n");
+	    printf("[INFO] HeaderString: %s, headerValue: %s\n", headerString, headerValue);
 	    err = write_to_socket(sd, line, strlen(line), WRITE_TIMEOUT);
 	    if ( err < 0 ) {
 	        print_log("Error: Unable to write %s to socket.\n", headerString);
 	    }
 	}
-	
 	
 	// if response.body != ""
 	// 
@@ -187,7 +190,11 @@ int handle_client(int sd)
 	my_server.name = HTTP_HEADER_LINE_SERVER;
 	my_server.value = "polkehn.c-gurus.com";
 	
-	http_header_line_entry_t my_headers[] = { my_date, my_server }; // besteht aus { name, value}
+	http_header_line_entry_t my_mod;
+	my_mod.name = HTTP_HEADER_LINE_LASTMODIFIED;
+	my_mod.value = "Droelf Uhr Oelf-und-Zoelfzig";
+	
+	http_header_line_entry_t my_headers[] = { my_date, my_server, my_mod }; // besteht aus { name, value}
 	*res->headerlist = my_headers;
 	res->status = HTTP_STATUS_OK;
 	
