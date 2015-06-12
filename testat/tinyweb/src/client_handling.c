@@ -56,19 +56,19 @@ int accept_client(int sd, int nsd)
 		// Accepting socket schließen
 		int nsd_err = close(nsd);
 		if ( nsd_err < 0 ) {
-	           printf("Error #%d: close of socket descriptor failed.\n", nsd_err);
+	           safe_printf("Error #%d: close of socket descriptor failed.\n", nsd_err);
 	           exit(nsd_err);
 	       }
 		
 		// Info ausgeben			
 		if (child_pid < 0){
 			// Fehler beim Forken - Infomeldung ausgeben
-			printf("[ERR #%d] Could not create child process for request. Request Denied.\n", child_pid);
+			safe_printf("[ERR #%d] Could not create child process for request. Request Denied.\n", child_pid);
 		}
 		else
 		{	
 			// Fork hat funktioniert - Infomeldung mit Prozess ausgeben
-			printf("[INFO] Created child process (%d) to handle request #%d.\n", child_pid, req_no);
+			safe_printf("[INFO] Created child process (%d) to handle request #%d.\n", child_pid, req_no);
 		}
 	}
 	else 
@@ -89,7 +89,7 @@ int accept_client(int sd, int nsd)
 		time_t end_time;
 		
 		// Client bearbeiten
-		ret = 0;//handle_client(nsd);
+		ret = handle_client(nsd);
 		
 		// Ressourcenverbrauch berechnen
 		end_time = time(NULL);
@@ -113,14 +113,16 @@ int send_response(http_res_t * response, int sd)
 {
     // error code for socket-write
     int err = 0;
-    
 	// get http status code and text
-    http_status_entry_t status = http_status_list[response->status];
+	int index = response->status;
+    http_status_entry_t status = http_status_list[index];
     char  status_code[3];
 	sprintf(status_code, "%u", status.code);
 	
 	// parse http status line
-	char* status_line = "HTTP/1.1 ";
+	char status_line[200];
+	strcpy(status_line, "HTTP/1.1 ");
+	//char* status_line = "HTTP/1.1 ";
 	strcat(status_line, status_code);
 	strcat(status_line, " ");
 	strcat(status_line, status.text);
@@ -141,6 +143,7 @@ int send_response(http_res_t * response, int sd)
 	// parse http header line by line
 	for(int i=0; i<2; i++) // TODO: find a better way than i<2; 
 	{
+	
 	    char line[BUFSIZE];
 	    char* headerString = http_header_list[response->headerlist[0]->name];
 	    strcat(line, headerString);
@@ -176,7 +179,6 @@ int handle_client(int sd)
 	//int err = parse_request(&request, request_str);
 	
 	//request.methode = GET
-	
 	http_header_line_entry_t my_date;
 	my_date.name = HTTP_HEADER_LINE_DATE;
 	my_date.value = "Mein Timestamp";
@@ -187,6 +189,7 @@ int handle_client(int sd)
 	
 	http_header_line_entry_t my_headers[] = { my_date, my_server }; // besteht aus { name, value}
 	*res->headerlist = my_headers;
+	res->status = HTTP_STATUS_OK;
 	
 	send_response(res, sd);
 	return 0;
