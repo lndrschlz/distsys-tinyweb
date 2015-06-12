@@ -56,24 +56,25 @@ int accept_client(int sd, int nsd)
 		// Accepting socket schließen
 		int nsd_err = close(nsd);
 		if ( nsd_err < 0 ) {
-	           printf("Error #%d: close of socket descriptor failed.\n", nsd_err);
+	           safe_printf("Error #%d: close of socket descriptor failed.\n", nsd_err);
 	           exit(nsd_err);
 	       }
 		
 		// Info ausgeben			
 		if (child_pid < 0){
 			// Fehler beim Forken - Infomeldung ausgeben
-			printf("[ERR #%d] Could not create child process for request. Request Denied.\n", child_pid);
+			safe_printf("[ERR #%d] Could not create child process for request. Request Denied.\n", child_pid);
 		}
 		else
 		{	
 			// Fork hat funktioniert - Infomeldung mit Prozess ausgeben
-			printf("[INFO] Created child process (%d) to handle request #%d.\n", child_pid, req_no);
+			safe_printf("[INFO] Created child process (%d) to handle request #%d.\n", child_pid, req_no);
 		}
 	}
 	else 
 	{
 		// Kindprozess
+		printf("%d\n", __LINE__);
 		// Zeitmessung starten
 		time_t start_time = time(NULL);	
 		
@@ -89,7 +90,9 @@ int accept_client(int sd, int nsd)
 		time_t end_time;
 		
 		// Client bearbeiten
-		ret = 0;//handle_client(nsd);
+		safe_printf("%d\n", __LINE__);
+		ret = handle_client(nsd);
+		safe_printf("%d\n", __LINE__);
 		
 		// Ressourcenverbrauch berechnen
 		end_time = time(NULL);
@@ -113,21 +116,27 @@ int send_response(http_res_t * response, int sd)
 {
     // error code for socket-write
     int err = 0;
-    
+    safe_printf("%d\n", __LINE__);
 	// get http status code and text
     http_status_entry_t status = http_status_list[response->status];
     char  status_code[3];
 	sprintf(status_code, "%u", status.code);
 	
+    safe_printf("%d\n", __LINE__);
 	// parse http status line
 	char* status_line = "HTTP/1.1 ";
 	strcat(status_line, status_code);
+    safe_printf("%d\n", __LINE__);
 	strcat(status_line, " ");
+    safe_printf("%d\n", __LINE__);
 	strcat(status_line, status.text);
+    safe_printf("%d\n", __LINE__);
 	strcat(status_line, "\r\n");
+    safe_printf("%d\n", __LINE__);
 	
 	// write http status line to socket 
 	err = write_to_socket(sd, status_line, strlen(status_line), WRITE_TIMEOUT);
+    safe_printf("%d\n", __LINE__);
 	if ( err < 0 ) {
 	    print_log("Error: Unable to write status_line to socket.\n");
 	}
@@ -139,14 +148,20 @@ int send_response(http_res_t * response, int sd)
 */
 	
 	// parse http header line by line
+    safe_printf("%d\n", __LINE__);
 	for(int i=0; i<2; i++) // TODO: find a better way than i<2; 
 	{
 	    char line[BUFSIZE];
 	    char* headerString = http_header_list[response->headerlist[0]->name];
+    safe_printf("%d\n", __LINE__);
 	    strcat(line, headerString);
+    safe_printf("%d\n", __LINE__);
 	    strcat(line, ": ");
+    safe_printf("%d\n", __LINE__);
 	    strcat(line, response->headerlist[0]->value);
+    safe_printf("%d\n", __LINE__);
 	    strcat(line, "\r\n");
+    safe_printf("%d\n", __LINE__);
 	    err = write_to_socket(sd, line, strlen(line), WRITE_TIMEOUT);
 	    if ( err < 0 ) {
 	        print_log("Error: Unable to write %s to socket.\n", headerString);
@@ -156,11 +171,13 @@ int send_response(http_res_t * response, int sd)
 	
 	// if response.body != ""
 	// 
+    safe_printf("%d\n", __LINE__);
 	return 0;
 }
 
 int handle_client(int sd)
 {	 
+    safe_printf("%d\n", __LINE__);
 	http_req_t req;
 	http_res_t *res = malloc(1000);                 // check up needed size later
 	char req_string[BUFSIZE];
@@ -176,19 +193,22 @@ int handle_client(int sd)
 	//int err = parse_request(&request, request_str);
 	
 	//request.methode = GET
-	
 	http_header_line_entry_t my_date;
 	my_date.name = HTTP_HEADER_LINE_DATE;
 	my_date.value = "Mein Timestamp";
+	safe_printf("%d\n", __LINE__);
 	
 	http_header_line_entry_t my_server;
 	my_server.name = HTTP_HEADER_LINE_SERVER;
 	my_server.value = "polkehn.c-gurus.com";
+	safe_printf("%d\n", __LINE__);
 	
 	http_header_line_entry_t my_headers[] = { my_date, my_server }; // besteht aus { name, value}
 	*res->headerlist = my_headers;
+	safe_printf("%d\n", __LINE__);
 	
 	send_response(res, sd);
+	safe_printf("%d\n", __LINE__);
 	return 0;
 }
 
