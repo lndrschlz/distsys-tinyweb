@@ -56,7 +56,7 @@ typedef struct http_status_entry {
 } http_status_entry_t;
 
 /* typedef for header lines */
- typedef struct http_header_line_entry {
+typedef struct http_header_line_entry {
     http_header_line_t      name;
     char*                   value;
 } http_header_line_entry_t;

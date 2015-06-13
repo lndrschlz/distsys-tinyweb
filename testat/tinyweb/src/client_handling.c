@@ -136,28 +136,33 @@ int send_response(http_res_t * response, int sd)
 	    print_log("Error: Unable to write status_line to socket.\n");
 	}
 	
-/*	char* header = http_header_list[response->headerlist[0]->name];
-	print_log("Name: %s, Value: %s\n", header, response->headerlist[0]->value); // get the header's value
-	printf("Name: %s, Value: %s\n", header, response->headerlist[0]->value); // get the header's value
-	safe_printf("Name: %s, Value: %s\n", header, response->headerlist[0]->value); // get the header's value
-*/
-	
+	// get number of filled header fields
+	int size = sizeof(response->headerlist[0]);
+	safe_printf("Response_size: %d\n", size);
+
 	// parse http header line by line
-	for(int i=0; i<3; i++) // TODO: find a better way than i<3; 
+	for(int i=0; i<2; i++) // TODO: find a better way than i<3; 
 	{
-	
+		safe_printf("%d\n", __LINE__);
 	    char line[BUFSIZE];
+	    safe_printf("%d\n", sizeof(response->headerlist[i]));
+	    http_header_line_entry_t *nextHeader = response->headerlist[i];
+	    safe_printf("%s\n", nextHeader->value);
 	    char* headerString = http_header_list[response->headerlist[i]->name];
+	    safe_printf("%d\n", __LINE__);
 	    char* headerValue  = response->headerlist[i]->value;
+	    safe_printf("%d\n", __LINE__);
 	    strcat(line, headerString);
 	    strcat(line, ": ");
 	    strcat(line, headerValue);
 	    strcat(line, "\r\n");
 	    printf("[INFO] HeaderString: %s, headerValue: %s\n", headerString, headerValue);
+	    safe_printf("%d\n", __LINE__);
 	    err = write_to_socket(sd, line, strlen(line), WRITE_TIMEOUT);
 	    if ( err < 0 ) {
 	        print_log("Error: Unable to write %s to socket.\n", headerString);
 	    }
+	    safe_printf("%d\n", __LINE__);
 	}
 	
 	// if response.body != ""
@@ -194,11 +199,15 @@ int handle_client(int sd)
 	my_mod.name = HTTP_HEADER_LINE_LASTMODIFIED;
 	my_mod.value = "Droelf Uhr Oelf-und-Zoelfzig";
 	
-	http_header_line_entry_t my_headers[] = { my_date, my_server, my_mod }; // besteht aus { name, value}
+	http_header_line_entry_t my_headers[3] = { my_date, my_server, my_mod }; // besteht aus { name, value}
 	*res->headerlist = my_headers;
 	res->status = HTTP_STATUS_OK;
 	
-	send_response(res, sd);
+	int sr_err = send_response(res, sd);
+	if ( sr_err < 0 ) {
+		printf("[ERROR] Failed to send response header! (send_response = %d)\n", sr_err);
+	}
+	
 	return 0;
 }
 
