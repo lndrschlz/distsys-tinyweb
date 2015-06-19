@@ -127,7 +127,7 @@ int handle_client(int sd)
 	http_res_t res;
 	//char req_string[BUFSIZE];
 	
-	char * req_string = "GET /test/resource/test.jpg HTTP/1.1\r\nHeader:Test\r\n\r\n";
+	char * req_string = "GET /test/resource/test.jpg HTTP/1.1\r\nRange:Test\r\n\r\n";
 	
 	int err = parse_request(&req, req_string);
 	if (err < 0)
@@ -135,7 +135,7 @@ int handle_client(int sd)
 		// do stuff
 	}
 	
-	safe_printf("Method: %s\nResource: %s\n", http_method_list[req.method].name, req.resource);
+	safe_printf("Method: %s\nResource: %s\nRange: %s\n", http_method_list[req.method].name, req.resource, req.range);
 	
 	// request einlesen (read...)
 	

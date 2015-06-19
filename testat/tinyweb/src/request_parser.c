@@ -5,18 +5,69 @@
 #define BUFSIZE 1000
 
 int parse_header(char * buffer, http_req_t * request)
-{
-	return 0;
+{	
+	char header_string[BUFSIZE];
+	char header_value[BUFSIZE];
+	safe_printf("Buffer: %s\n");
+	if(buffer == (strstr(buffer, "\r\n"))){
+		safe_printf("Done with parsing.\n");
+		return 0; // Done with parsing
+	} 
+	else
+	{
+		char * walker = strstr(buffer, ":");
+		if (walker)
+		{
+			strncpy(header_string, buffer, walker-buffer);
+			header_string[walker-buffer+1] = '\0';
+			safe_printf("Header String: %s\n", header_string);
+			buffer = walker + 1;
+			walker = strstr(buffer, "\r\n");
+		
+			if (strcmp(header_string, "Range") == 0)
+			{	
+				if (walker)
+				{
+					strncpy(header_value, buffer, walker-buffer);
+					safe_printf("Range Header: %s\n", header_value);
+					header_value[walker-buffer+1] = '\0';
+					safe_printf("Range Header: %s\n", header_value);
+					request->range = header_value;
+				} 
+				else 
+				{
+					return -1;
+				}
+			}
+
+			walker = strstr(buffer, "\r\n");
+			if (walker)
+			{	
+				return parse_header(walker+2, request);
+			}
+			else
+			{
+				return -1;
+			}
+					
+		}
+		else
+		{
+			return -1;
+		}
+	}
+	return 0;	
 }
 
 int parse_version(char * buffer, http_req_t * request)
 {	
-	char version_string[9];
+	char version_string[BUFSIZE];
 	char * walker = strstr(buffer, "\r\n");
 	
 	if (walker)
 	{	
 		strncpy(version_string, buffer, walker-buffer);
+		version_string[walker-buffer+1] = '\0';
 		if (strcmp(version_string, "HTTP/1.1") == 0)
 		{
 			return parse_header(walker + 2, request);
@@ -28,14 +79,14 @@ int parse_version(char * buffer, http_req_t * request)
 
 int parse_resource_string(char * buffer, http_req_t * request)
 {
-	char resource_string[255];
+	char resource_string[BUFSIZE];
 	
 	char * walker = strstr(buffer, " ");
 	if (walker)
 	{
-		strncpy(resource_string, buffer, walker-buffer );	
+		strncpy(resource_string, buffer, walker-buffer );
+		resource_string[walker-buffer+1] = '\0';					
 		request->resource = resource_string;
-		safe_printf("Resource String: %s\n" , resource_string);
 		parse_version(++walker, request);
 		return 0;
 	}	
