@@ -127,7 +127,7 @@ int handle_client(int sd)
 	http_res_t res;
 	//char req_string[BUFSIZE];
 	
-	char * req_string = "GET /test/resource/test.jpg HTTP/1.1\r\nRange:Test\r\n\r\n";
+	char * req_string = "GET /test/resource/test.jpg HTTP/1.1\r\nRange:Test\r\nContent-Length:0\r\n\r\n";
 	
 	int err = parse_request(&req, req_string);
 	if (err < 0)

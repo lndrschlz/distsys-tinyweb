@@ -8,9 +8,7 @@ int parse_header(char * buffer, http_req_t * request)
 {	
 	char header_string[BUFSIZE];
 	char header_value[BUFSIZE];
-	safe_printf("Buffer: %s\n");
 	if(buffer == (strstr(buffer, "\r\n"))){
-		safe_printf("Done with parsing.\n");
 		return 0; // Done with parsing
 	} 
 	else
@@ -20,18 +18,14 @@ int parse_header(char * buffer, http_req_t * request)
 		{
 			strncpy(header_string, buffer, walker-buffer);
 			header_string[walker-buffer+1] = '\0';
-			safe_printf("Header String: %s\n", header_string);
 			buffer = walker + 1;
 			walker = strstr(buffer, "\r\n");
-		
 			if (strcmp(header_string, "Range") == 0)
 			{	
 				if (walker)
 				{
 					strncpy(header_value, buffer, walker-buffer);
-					safe_printf("Range Header: %s\n", header_value);
-					header_value[walker-buffer+1] = '\0';
-					safe_printf("Range Header: %s\n", header_value);
+					header_value[walker-buffer] = '\0';
 					request->range = header_value;
 				} 
 				else 
@@ -121,7 +115,7 @@ int parse_method(char * buffer, http_req_t * request){
 int parse_request(http_req_t * request, char *req_string)
 {
 	char buffer[BUFSIZE];
-	strcpy(buffer, req_string);
+	strncpy(buffer, req_string, strlen(req_string));
 
 	int err = parse_method(buffer, request);
 	if (err < 0 )
