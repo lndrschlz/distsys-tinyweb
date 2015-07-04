@@ -32,7 +32,7 @@
 #include <request_parser.h>
 #include <safe_print.h>
 
-#define BUFSIZE 1000
+#define BUFSIZE 100000
 #define WRITE_TIMEOUT 1000
 
 #define _DEBUG
@@ -40,8 +40,8 @@
  // GLOBAL REQUEST COUNTER
 static int request_counter = 0;
  
-int accept_client(int sd, int nsd)
-{
+int accept_client(int sd /*accepting socket */, int nsd /*listening socket */)
+{	
     // increase request_counter to give request a sequence number
     request_counter++;
     int req_no = request_counter;
@@ -51,7 +51,7 @@ int accept_client(int sd, int nsd)
 	if ((child_pid = fork()))
 	{	
 		// Vaterprozess
-		// Accepting socket schließen
+		// Listening socket schließen
 		int nsd_err = close(nsd);
 		if ( nsd_err < 0 ) {
 	           printf("Error #%d: close of socket descriptor failed.\n", nsd_err);
@@ -75,7 +75,7 @@ int accept_client(int sd, int nsd)
 		// Zeitmessung starten
 		time_t start_time = time(NULL);	
 		
-		// Listening socket schließen
+		// Accepting socket schließen
 		int sd_err = close(sd);
 		if ( sd_err < 0 ) {
 	           printf("Error #%d: close of socket descriptor failed.\n", sd_err);
@@ -87,7 +87,7 @@ int accept_client(int sd, int nsd)
 		time_t end_time;
 		
 		// Client bearbeiten
-		ret = handle_client(sd);
+		ret = handle_client(nsd);
 		
 		// Ressourcenverbrauch berechnen
 		end_time = time(NULL);
@@ -125,17 +125,22 @@ int handle_client(int sd)
 {	 
 	http_req_t req;
 	http_res_t res;
-	//char req_string[BUFSIZE];
+	char * req_string = malloc(BUFSIZE);
 	
-	char * req_string = "GET /test/resource/test.jpg HTTP/1.1\r\nRange:Test\r\nContent-Length:0\r\n\r\n";
+	//char * req_string = "GET /test/resource/test.jpg HTTP/1.1\r\nRange:Test\r\nContent-Length:0\r\n\r\n";
 	
+	read_from_socket (sd, req_string, BUFSIZE, 1);
+	safe_printf("%s\n", req_string);
 	int err = parse_request(&req, req_string);
 	if (err < 0)
 	{
-		// do stuff
+		exit(-1);	
+	}
+	else
+	{
+		safe_printf("Method: %s\nResource: %s\nRange: %s\n", http_method_list[req.method].name, req.resource, req.range);
 	}
 	
-	safe_printf("Method: %s\nResource: %s\nRange: %s\n", http_method_list[req.method].name, req.resource, req.range);
 	
 	// request einlesen (read...)
 	
