@@ -130,7 +130,6 @@ int handle_client(int sd)
 	//char * req_string = "GET /test/resource/test.jpg HTTP/1.1\r\nRange:Test\r\nContent-Length:0\r\n\r\n";
 	
 	read_from_socket (sd, req_string, BUFSIZE, 1);
-	safe_printf("%s\n", req_string);
 	int err = parse_request(&req, req_string);
 	if (err < 0)
 	{

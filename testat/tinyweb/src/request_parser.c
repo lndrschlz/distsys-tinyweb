@@ -6,8 +6,8 @@
 
 int parse_header(char * buffer, http_req_t * request)
 {	
-	char header_string[BUFSIZE];
-	char header_value[BUFSIZE];
+	char * header_string = malloc(BUFSIZE);
+	char * header_value = malloc(BUFSIZE);
 	if(buffer == (strstr(buffer, "\r\n"))){
 		return 0; // Done with parsing
 	} 
@@ -55,7 +55,7 @@ int parse_header(char * buffer, http_req_t * request)
 
 int parse_version(char * buffer, http_req_t * request)
 {	
-	char version_string[BUFSIZE];
+	char * version_string = malloc(BUFSIZE);
 	char * walker = strstr(buffer, "\r\n");
 	
 	if (walker)
@@ -73,7 +73,7 @@ int parse_version(char * buffer, http_req_t * request)
 
 int parse_resource_string(char * buffer, http_req_t * request)
 {
-	char resource_string[BUFSIZE];
+	char * resource_string = malloc(BUFSIZE);
 	
 	char * walker = strstr(buffer, " ");
 	if (walker)
@@ -114,7 +114,7 @@ int parse_method(char * buffer, http_req_t * request){
 
 int parse_request(http_req_t * request, char *req_string)
 {
-	char buffer[BUFSIZE];
+	char * buffer = malloc(BUFSIZE);
 	strncpy(buffer, req_string, strlen(req_string));
 
 	int err = parse_method(buffer, request);
