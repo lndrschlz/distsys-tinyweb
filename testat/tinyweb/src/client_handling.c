@@ -36,7 +36,7 @@
 #include "sem_print.h"
 
 #define BUFSIZE 100000
-#define WRITE_TIMEOUT 1000
+#define WRITE_TIMEOUT 10
 
 
 #define _DEBUG
@@ -74,7 +74,8 @@ int accept_client(int sd /*accepting socket */, int nsd /*listening socket */)
 		}
 	}
 	else 
-	{
+	{	
+		safe_printf("%s\n", __LINE__);
 		// Kindprozess
 		// Zeitmessung starten
 		time_t start_time = time(NULL);	
@@ -115,27 +116,39 @@ int send_response(http_res_t * response, int sd)
 {
     // error code for socket-write
     int err = 0;
+    safe_printf("%s\n", __LINE__);
 	// get http status code and text
 	int index = response->status;
+	safe_printf("%s\n", __LINE__);
     http_status_entry_t status = http_status_list[index];
+    safe_printf("%s\n", __LINE__);
     char  status_code[50];
+    safe_printf("%s\n", __LINE__);
 	sprintf(status_code, "%u", status.code);
+	safe_printf("%s\n", __LINE__);
 	
 	printf("[INFO] STATUS CODE: %s\n", status_code);
 	
 	// parse http status line
 	char* status_line = malloc(BUFSIZE);
+	safe_printf("%s\n", __LINE__);
 	strcpy(status_line, "HTTP/1.1 ");
+	safe_printf("%s\n", __LINE__);
 	//char* status_line = "HTTP/1.1 ";
 	strcat(status_line, status_code);
+	safe_printf("%s\n", __LINE__);
 	strcat(status_line, " ");
+	safe_printf("%s\n", __LINE__);
 	strcat(status_line, status.text);
+	safe_printf("%s\n", __LINE__);
 	strcat(status_line, "\r\n");
+	safe_printf("%s\n", __LINE__);
 	
 	
 	
 	// write http status line to socket 
 	err = write_to_socket(sd, status_line, strlen(status_line), WRITE_TIMEOUT);
+	safe_printf("%s\n", __LINE__);
 	if ( err < 0 ) {
 	    print_log("Error: Unable to write status_line to socket.\n");
 	}
@@ -179,15 +192,19 @@ int send_response(http_res_t * response, int sd)
 int handle_client(int sd)
 {	 
 	http_req_t req;
-	http_res_t *res = malloc(1000);                 // check up needed size later
+	safe_printf("%s\n", __LINE__);
+	http_res_t *res = malloc(1000);  
+	safe_printf("%s\n", __LINE__);// check up needed size later
 	char * req_string = malloc(BUFSIZE);
+	safe_printf("%s\n", __LINE__);
 	
-	
-	read_from_socket (sd, req_string, BUFSIZE, 1);
+	read_from_socket (sd, req_string, BUFSIZE, WRITE_TIMEOUT);
+	safe_printf("%s\n", __LINE__);
 	int err = parse_request(&req, req_string);
+	safe_printf("%s\n", __LINE__);
 	if (err < 0)
 	{
-		exit(-1);	
+		//exit(-1);	
 	}
 	else
 	{
@@ -208,23 +225,23 @@ int handle_client(int sd)
 	http_header_line_entry_t my_server;
 	my_server.name = HTTP_HEADER_LINE_SERVER;
 	my_server.value = "polkehn.c-gurus.com";
-	
-	http_header_line_entry_t my_mod;
-	my_mod.name = HTTP_HEADER_LINE_LASTMODIFIED;
-	my_mod.value = "Droelf Uhr Oelf-und-Zoelfzig";
 */	
 	//http_header_line_entry_t my_headers[3] = { my_date, my_server, my_mod }; // besteht aus { name, value}
 	//*res->headerlist = my_headers;
+	safe_printf("%s\n", __LINE__);
 	res->status = HTTP_STATUS_OK;
+	safe_printf("%s\n", __LINE__);
 	struct tm *ts;
+	safe_printf("%s\n", __LINE__);
 	ts = localtime((time_t*) time(NULL));
+	safe_printf("%s\n", __LINE__);
 	strftime(res->date, BUFSIZE, "%a, %d %b %Y %T %z", ts);
-
+safe_printf("%s\n", __LINE__);
 	res->server = "C-Server DistSys";
-	
+	safe_printf("%s\n", __LINE__);
 	int sr_err = send_response(res, sd);
 	if ( sr_err < 0 ) {
-		printf("[ERROR] Failed to send response header! (send_response = %d)\n", sr_err);
+		safe_printf("[ERROR] Failed to send response header! (send_response = %d)\n", sr_err);
 	}
 	
 	return 0;
