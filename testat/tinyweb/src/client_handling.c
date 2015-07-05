@@ -122,7 +122,7 @@ int send_response(http_res_t * response, int sd)
 	printf("[INFO] STATUS CODE: %s\n", status_code);
 	
 	// parse http status line
-	char status_line[10];
+	char* status_line = malloc(BUFSIZE);
 	strcpy(status_line, "HTTP/1.1 ");
 	//char* status_line = "HTTP/1.1 ";
 	strcat(status_line, status_code);
@@ -130,16 +130,19 @@ int send_response(http_res_t * response, int sd)
 	strcat(status_line, status.text);
 	strcat(status_line, "\r\n");
 	
+	
+	
 	// write http status line to socket 
 	err = write_to_socket(sd, status_line, strlen(status_line), WRITE_TIMEOUT);
 	if ( err < 0 ) {
 	    print_log("Error: Unable to write status_line to socket.\n");
 	}
+
+	
 	
 	// get number of filled header fields
-	int size = sizeof(response->headerlist[0]);
+/*	int size = sizeof(response->headerlist[0]);
 	safe_printf("Response_size: %d\n", size);
-
 	// parse http header line by line
 	for(int i=0; i<2; i++) // TODO: find a better way than i<3; 
 	{
@@ -163,7 +166,8 @@ int send_response(http_res_t * response, int sd)
 	        print_log("Error: Unable to write %s to socket.\n", headerString);
 	    }
 	    safe_printf("%d\n", __LINE__);
-	}
+	} 
+	*/
 	
 	// if response.body != ""
 	// 
@@ -187,7 +191,7 @@ int handle_client(int sd)
 	//int err = parse_request(&request, request_str);
 	
 	//request.methode = GET
-	http_header_line_entry_t my_date;
+/*	http_header_line_entry_t my_date;
 	my_date.name = HTTP_HEADER_LINE_DATE;
 	my_date.value = "Mein Timestamp";
 	
@@ -198,10 +202,15 @@ int handle_client(int sd)
 	http_header_line_entry_t my_mod;
 	my_mod.name = HTTP_HEADER_LINE_LASTMODIFIED;
 	my_mod.value = "Droelf Uhr Oelf-und-Zoelfzig";
-	
-	http_header_line_entry_t my_headers[3] = { my_date, my_server, my_mod }; // besteht aus { name, value}
-	*res->headerlist = my_headers;
+*/	
+	//http_header_line_entry_t my_headers[3] = { my_date, my_server, my_mod }; // besteht aus { name, value}
+	//*res->headerlist = my_headers;
 	res->status = HTTP_STATUS_OK;
+	struct tm *ts;
+	ts = localtime((time_t*) time(NULL));
+	strftime(res->date, BUFSIZE, "%a, %d %b %Y %T %z", ts);
+
+	res->server = "C-Server DistSys";
 	
 	int sr_err = send_response(res, sd);
 	if ( sr_err < 0 ) {
