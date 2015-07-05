@@ -30,20 +30,22 @@
 #include <tinyweb.h>
 #include <client_handling.h>
 #include <request_parser.h>
+
 #include "http.h"
 #include "safe_print.h"
 #include "sem_print.h"
 
-#define BUFSIZE 1000
-#define WRITE_TIMEOUT 10
+#define BUFSIZE 100000
+#define WRITE_TIMEOUT 1000
+
 
 #define _DEBUG
  
  // GLOBAL REQUEST COUNTER
 static int request_counter = 0;
  
-int accept_client(int sd, int nsd)
-{
+int accept_client(int sd /*accepting socket */, int nsd /*listening socket */)
+{	
     // increase request_counter to give request a sequence number
     request_counter++;
     int req_no = request_counter;
@@ -53,7 +55,7 @@ int accept_client(int sd, int nsd)
 	if ((child_pid = fork()))
 	{	
 		// Vaterprozess
-		// Accepting socket schließen
+		// Listening socket schließen
 		int nsd_err = close(nsd);
 		if ( nsd_err < 0 ) {
 	           safe_printf("Error #%d: close of socket descriptor failed.\n", nsd_err);
@@ -77,7 +79,7 @@ int accept_client(int sd, int nsd)
 		// Zeitmessung starten
 		time_t start_time = time(NULL);	
 		
-		// Listening socket schließen
+		// Accepting socket schließen
 		int sd_err = close(sd);
 		if ( sd_err < 0 ) {
 	           printf("Error #%d: close of socket descriptor failed.\n", sd_err);
@@ -178,13 +180,21 @@ int handle_client(int sd)
 {	 
 	http_req_t req;
 	http_res_t *res = malloc(1000);                 // check up needed size later
-	char req_string[BUFSIZE];
+	char * req_string = malloc(BUFSIZE);
 	
+	
+	read_from_socket (sd, req_string, BUFSIZE, 1);
 	int err = parse_request(&req, req_string);
 	if (err < 0)
 	{
-		// do stuff
+		exit(-1);	
 	}
+	else
+	{
+		safe_printf("Method: %s\nResource: %s\nRange: %s\n", http_method_list[req.method].name, req.resource, req.range);
+	}
+	
+	
 	// request einlesen (read...)
 	
 	// request parsen -> request 
