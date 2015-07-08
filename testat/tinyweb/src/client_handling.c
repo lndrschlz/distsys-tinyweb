@@ -147,8 +147,8 @@ int handle_client(int sd)
 	//int err = parse_request(&request, request_str);
 	
 	//request.methode = GET
-	
 	send_response(&res, sd);
+	free(req_string);
 	return 0;
 }
 

@@ -37,19 +37,23 @@ int parse_header(char * buffer, http_req_t * request)
 			walker = strstr(buffer, "\r\n");
 			if (walker)
 			{	
+				free(header_string);
 				return parse_header(walker+2, request);
 			}
 			else
-			{
+			{	
+				free(header_string);
 				return -1;
 			}
 					
 		}
 		else
 		{
+				free(header_string);
 			return -1;
 		}
 	}
+	free(header_string);
 	return 0;	
 }
 
@@ -63,11 +67,14 @@ int parse_version(char * buffer, http_req_t * request)
 		strncpy(version_string, buffer, walker-buffer);
 		version_string[walker-buffer+1] = '\0';
 		if (strcmp(version_string, "HTTP/1.1") == 0)
-		{
+		{	
+			free(version_string);
 			return parse_header(walker + 2, request);
 		}
+		free(version_string);
 		return -1;
 	}
+	free(version_string);
 	return -1;
 }
 
@@ -122,6 +129,7 @@ int parse_request(http_req_t * request, char *req_string)
 	{
 		safe_printf("Error on parsing request!\n");
 	}
+	free(buffer);
 	return err;
 }
 
