@@ -107,20 +107,115 @@ int accept_client(int sd /*accepting socket */, int nsd /*listening socket */)
 	return 0;	
 }
 
-int send_response(http_res_t * response,int sd)
+int send_response(http_res_t * response, int sd)
 {
 	// error code for socket-write
     int err = 0;
     safe_printf("Hallo Sendresponse\n");
-	// status zeile schreiben
-	// write(...)
+    
+	// status zeile vorbereiten
+	int index = response->status;
+	http_status_entry_t status = http_status_list[index];
+	char status_code[50];
+	sprintf(status_code, "%u", status.code);
+	printf("[INFO] STATUS CODE: %s\n", status_code);
+	// status zeile zusammen bauen
+	char* status_line = malloc(BUFSIZE);
+	strcpy(status_line, "HTTP/1.1 ");
+	strcat(status_line, status_code);
+	strcat(status_line, " ");
+	strcat(status_line, status.text);
+	strcat(status_line, "\r\n");
+	
+	// status zeile auf den socket schreiben
+	err = write_to_socket(sd, status_line, strlen(status_line), WRITE_TIMEOUT);
 	if ( err < 0 ) {
 	    safe_printf("Error: Unable to write status_line to socket.\n");
 	}
-	// header
-	// if header != ""
-	// write(...)
 	
+	// get server and write to socket
+	char* server = (char*)malloc(BUFSIZE);
+ 	strcpy(server, "Server: ");
+	strcat(server, response->server);
+ 	strcat(server, "\r\n");
+ 	err = write_to_socket(sd, server, strlen(server), WRITE_TIMEOUT);
+ 	if ( err < 0 ) {
+ 	    safe_printf("Error: Unable to write date to socket.\n");
+ 	}
+	
+	// get date and write date to socket
+	//if ( response->date != NULL ||  strcmp(response->date, "") ) {
+		char* date = (char*)malloc(BUFSIZE);
+ 		strcpy(date, "Date: ");
+		strcat(date, response->date);
+ 		strcat(date, "\r\n");
+ 		err = write_to_socket(sd, date, strlen(date), WRITE_TIMEOUT);
+ 		if ( err < 0 ) {
+ 		    safe_printf("Error: Unable to write date to socket.\n");
+ 		}
+	//}
+ 	
+    // get last_modified and write to socket
+	char* lm = (char*)malloc(BUFSIZE);
+ 	strcpy(lm, "Last-Modified: ");
+	strcat(lm, response->last_modified);
+ 	strcat(lm, "\r\n");
+ 	err = write_to_socket(sd, lm, strlen(lm), WRITE_TIMEOUT);
+ 	if ( err < 0 ) {
+ 	    safe_printf("Error: Unable to write date to socket.\n");
+ 	}
+	
+	// get content_length and write to socket
+	char* content_length = (char*)malloc(BUFSIZE);
+ 	strcpy(content_length, "Content-Length: ");
+	strcat(content_length, response->content_length);
+ 	strcat(content_length, "\r\n");
+ 	err = write_to_socket(sd, content_length, strlen(content_length), WRITE_TIMEOUT);
+ 	if ( err < 0 ) {
+ 	    safe_printf("Error: Unable to write content_length to socket.\n");
+ 	}
+ 	
+ 	// get content_type and write to socket
+	char* content_type = (char*)malloc(BUFSIZE);
+ 	strcpy(content_type, "Content-Type: ");
+	strcat(content_type, response->content_type);
+ 	strcat(content_type, "\r\n");
+ 	err = write_to_socket(sd, content_type, strlen(content_type), WRITE_TIMEOUT);
+ 	if ( err < 0 ) {
+ 	    safe_printf("Error: Unable to write content_type to socket.\n");
+ 	}
+	
+	// get connection and write to socket
+	char* connection = (char*)malloc(BUFSIZE);
+ 	strcpy(connection, "Connection: ");
+	strcat(connection, response->connection);
+ 	strcat(connection, "\r\n");
+ 	err = write_to_socket(sd, connection, strlen(connection), WRITE_TIMEOUT);
+ 	if ( err < 0 ) {
+ 	    safe_printf("Error: Unable to connection date to socket.\n");
+ 	}
+ 	
+ 	// get accept_ranges and write to socket
+	char* accept_ranges = (char*)malloc(BUFSIZE);
+ 	strcpy(accept_ranges, "Accept-Ranges: ");
+	strcat(accept_ranges, response->accept_ranges);
+ 	strcat(accept_ranges, "\r\n");
+ 	err = write_to_socket(sd, accept_ranges, strlen(accept_ranges), WRITE_TIMEOUT);
+ 	if ( err < 0 ) {
+ 	    safe_printf("Error: Unable to write accept_ranges to socket.\n");
+ 	}
+ 	
+ 	// get location and write to socket
+	char* location = (char*)malloc(BUFSIZE);
+ 	strcpy(location, "Location: ");
+	strcat(location, response->location);
+ 	strcat(location, "\r\n");
+ 	err = write_to_socket(sd, location, strlen(location), WRITE_TIMEOUT);
+ 	if ( err < 0 ) {
+ 	    safe_printf("Error: Unable to write location to socket.\n");
+ 	}
+ 	
+ 	
 	// if response.body != ""
 	// 
 	return 0;
@@ -138,7 +233,7 @@ int handle_client(int sd)
 	int err = parse_request(&req, req_string);
 	if (err < 0)
 	{
-		exit(-1);	
+		//exit(-1);
 	}
 	else
 	{
@@ -150,10 +245,24 @@ int handle_client(int sd)
 	
 	// request parsen -> request 
 	//int err = parse_request(&request, request_str);
-	
+
 	//request.methode = GET
-	send_response(&res, sd);
-	free(req_string);
+	res.status = HTTP_STATUS_OK;
+	
+
+	res.date = "Day, 01 Jan 2000 12:00:00 GMT";
+	res.server = "C-Server DistSys";
+	res.last_modified = "Today";
+	res.content_length = "2";
+    res.content_type = "3";
+    res.connection = "4";
+    res.accept_ranges = "5";
+    res.location = "6";
+    res.body = "7";
+	err = send_response(&res, sd);
+	if ( err < 0 ) {
+		safe_printf("Failed to send the response: %d\n", err);
+	}
 	return 0;
 }
 
