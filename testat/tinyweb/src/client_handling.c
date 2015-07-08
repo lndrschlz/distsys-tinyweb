@@ -109,9 +109,14 @@ int accept_client(int sd /*accepting socket */, int nsd /*listening socket */)
 
 int send_response(http_res_t * response,int sd)
 {
+	// error code for socket-write
+    int err = 0;
+    safe_printf("Hallo Sendresponse\n");
 	// status zeile schreiben
 	// write(...)
-	
+	if ( err < 0 ) {
+	    safe_printf("Error: Unable to write status_line to socket.\n");
+	}
 	// header
 	// if header != ""
 	// write(...)
