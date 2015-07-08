@@ -50,14 +50,16 @@ typedef struct http_req {
  * struct to store http_response
  */
 typedef struct http_res {
-    char*       date;
-    char*       server;
-    char*       last_modified;
-    char*       content_length;
-    char*       content_type;
-    char*       connection;
-    char*       accept_ranges;
-    char*       location;
+	http_status_t	status;
+    char*       	date;
+    char*       	server;
+    char*       	last_modified;
+    char*       	content_length;
+    char*       	content_type;
+    char*       	connection;
+    char*       	accept_ranges;
+    char*       	location;
+    char*			body;
 } http_res_t;
 
 #endif
