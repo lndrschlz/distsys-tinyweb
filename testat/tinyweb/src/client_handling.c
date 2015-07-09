@@ -107,6 +107,15 @@ int accept_client(int sd /*accepting socket */, int nsd /*listening socket */)
 	return 0;	
 }
 
+/*
+ * function:		send_response
+ * purpose:			concatenate the header lines and write them to the socket if they exist
+ * IN:				http_res_t* response - struct with response headers / body to send
+ *					int sd - socket descriptor for writing socket
+ * OUT:				-
+ * globals used:	-
+ * return value:	zero if okay, anything else if not
+*/
 int send_response(http_res_t * response, int sd)
 {
 	// error code for socket-write
@@ -250,15 +259,36 @@ int send_response(http_res_t * response, int sd)
 	return 0;
 }
 
+/*
+ * function:		handle_client
+ * purpose:			concatenate the header lines and write them to the socket if they exist
+ * IN:				int sd - socket descriptor for writing socket
+ * OUT:				-
+ * globals used:	-
+ * return value:	zero if okay, anything else if not
+*/
 int handle_client(int sd)
 {	 
 	http_req_t req;
 	http_res_t res;
 	char * req_string = malloc(BUFSIZE);
 	
+	// initialize response
+	res.status = HTTP_STATUS_INTERNAL_SERVER_ERROR;
+	res.date = "";
+	res.server = "";
+	res.last_modified = "";
+	res.content_length = "";
+    res.content_type = "";
+    res.connection = "";
+    res.accept_ranges = "";
+    res.location = "";
+    res.body = "";
+	
 	//char * req_string = "GET /test/resource/test.jpg HTTP/1.1\r\nRange:Test\r\nContent-Length:0\r\n\r\n";
 	
-	read_from_socket (sd, req_string, BUFSIZE, 1);
+	// read the request from the socket
+	read_from_socket(sd, req_string, BUFSIZE, 1);
 	int err = parse_request(&req, req_string);
 	if (err < 0)
 	{
@@ -270,15 +300,27 @@ int handle_client(int sd)
 	}
 	
 	
-	// request einlesen (read...)
+	
+	// request handling ----------------------------------------------------------
+	
+	// check http method if not GET or HEAD
+	if ( req.method != HTTP_METHOD_GET && req.method != HTTP_METHOD_HEAD ) {
+		// return status 501 - not implemented
+		res.status = HTTP_STATUS_NOT_IMPLEMENTED;
+		// directly write status to socket and exit
+		err = send_response(&res, sd);
+		if ( err < 0 ) {
+			safe_printf("Failed to send the response: %d\n", err);
+		}
+		return 0;
+	}
+	
 	
 	// request parsen -> request 
 	//int err = parse_request(&request, request_str);
 
 	//request.methode = GET
 	res.status = HTTP_STATUS_OK;
-	
-
 	res.date = "Day, 01 Jan 2000 12:00:00 GMT";
 	res.server = "C-Server DistSys";
 	res.last_modified = "1";

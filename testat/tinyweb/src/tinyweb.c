@@ -59,7 +59,7 @@ static volatile sig_atomic_t server_running = false;
  * IN:				int sig - contains integer of the recieved signal 
  * OUT:				-
  * globals used:	server_running - set false to shut server down
- * returns used:	-
+ * return value:	-
 */
 static void
 sig_handler(int sig)
