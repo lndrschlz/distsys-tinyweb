@@ -236,7 +236,7 @@ int send_response(http_res_t * response, int sd)
  	    safe_printf("Error: Unable to write new line to socket.\n");
  	}
  	
-	// get location and write to socket
+	// get body and write to socket
 	if ( strcmp(response->body, "") ) {
 		char* body = (char*)malloc(BUFSIZE);
  		strcpy(body, response->body);
