@@ -53,9 +53,14 @@ static volatile sig_atomic_t server_running = false;
 
 #define IS_ROOT_DIR(mode)   (S_ISDIR(mode) && ((S_IROTH || S_IXOTH) & (mode)))
 
-//
-// TODO: Include your function header here
-//
+/*
+ * function:		sig_handler
+ * purpose:			signal handling of the webserver
+ * IN:				int sig - contains integer of the recieved signal 
+ * OUT:				-
+ * globals used:	server_running - set false to shut server down
+ * returns used:	-
+*/
 static void
 sig_handler(int sig)
 {
