@@ -64,13 +64,27 @@ static volatile sig_atomic_t server_running = false;
 static void
 sig_handler(int sig)
 {
-    switch(sig) {
+    switch(sig) { 
         case SIGINT:
             // use our own thread-safe implemention of printf
+            // treat interrupt
             safe_printf("\n[%d] Server terminated due to keyboard interrupt\n", getpid());
             server_running = false;
             break;
-        // TODO: Complete signal handler
+        case SIGCHLD:
+        	// treat child process signal
+        	safe_printf("\n[%d] Signal from child process detected\n", getpid());
+            break;
+        case SIGSEGV:
+        	// treat segfault
+        	safe_printf("\n[%d] Server terminated due to segmentation violation\n", getpid());
+			server_running = false;
+            break;
+        case SIGABRT:
+        	// treat abort
+			safe_printf("\n[%d] Server terminated due to system abort\n", getpid());
+			server_running = false;
+            break;
         default:
             break;
     } /* end switch */
