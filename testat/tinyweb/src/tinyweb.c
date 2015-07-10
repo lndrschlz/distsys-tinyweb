@@ -254,6 +254,23 @@ install_signal_handlers(void)
         perror("sigaction(SIGINT)");
         exit(EXIT_FAILURE);
     } /* end if */
+    
+    // add SIGCHLD
+	if(sigaction(SIGCHLD, &sa, NULL) < 0) {
+        perror("sigaction(SIGCHLD)");
+        //exit(EXIT_FAILURE);
+    } /* end if */
+    // add SIGSEGV
+    if(sigaction(SIGSEGV, &sa, NULL) < 0) {
+        perror("sigaction(SIGSEGV)");
+        exit(EXIT_FAILURE);
+    } /* end if */
+    
+    // add SIGABRT
+    if(sigaction(SIGABRT, &sa, NULL) < 0) {
+        perror("sigaction(SIGABRT)");
+        exit(EXIT_FAILURE);
+    } /* end if */
 } /* end of install_signal_handlers */
 
 
@@ -280,16 +297,14 @@ main(int argc, char *argv[])
     check_root_dir(&my_opt);
     install_signal_handlers();
     init_logging_semaphore();
-
-    // TODO: start the server and handle clients...
-    // here, as an example, show how to interact with the
-    // condition set by the signal handler above
-    printf("[%d] Starting server '%s'...\n", getpid(), my_opt.progname);
     
+    // get root_dir to handle it later in child process
+    char* root_dir = my_opt.root_dir;
+
+    // start the server and create socket
+    printf("[%d] Starting server '%s'...\n", getpid(), my_opt.progname);
     int accepting_socket = passive_tcp(my_opt.server_port, 5);
     struct sockaddr_in from_client;
-    
-    // hier socket anlegen und in die while schleiße zu übergeben
     
     server_running = true;
     while(server_running) {
@@ -298,7 +313,7 @@ main(int argc, char *argv[])
         // Accept new Client
         int listening_socket = accept(accepting_socket, (struct sockaddr *) &from_client, &from_client_len);
         
-        accept_client(accepting_socket, listening_socket);
+        accept_client(accepting_socket, listening_socket, root_dir);
         
     } /* end while */
 
