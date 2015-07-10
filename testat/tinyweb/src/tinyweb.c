@@ -59,7 +59,7 @@ static volatile sig_atomic_t server_running = false;
  * IN:				int sig - contains integer of the recieved signal 
  * OUT:				-
  * globals used:	server_running - set false to shut server down
- * returns used:	-
+ * return value:	-
 */
 static void
 sig_handler(int sig)
@@ -254,6 +254,24 @@ install_signal_handlers(void)
         perror("sigaction(SIGINT)");
         exit(EXIT_FAILURE);
     } /* end if */
+    
+    // add SIGCHLD
+	if(sigaction(SIGCHLD, &sa, NULL) < 0) {
+        perror("sigaction(SIGCHLD)");
+        //exit(EXIT_FAILURE);
+    } /* end if */
+    // add SIGSEGV
+    if(sigaction(SIGSEGV, &sa, NULL) < 0) {
+        perror("sigaction(SIGSEGV)");
+        exit(EXIT_FAILURE);
+    } /* end if */
+    
+    // add SIGABRT
+    if(sigaction(SIGABRT, &sa, NULL) < 0) {
+        perror("sigaction(SIGABRT)");
+        exit(EXIT_FAILURE);
+    } /* end if */
+    
 } /* end of install_signal_handlers */
 
 
