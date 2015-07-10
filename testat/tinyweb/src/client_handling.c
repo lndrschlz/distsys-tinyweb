@@ -32,7 +32,7 @@
 #include <request_parser.h>
 #include <safe_print.h>
 
-#define BUFSIZE 100000
+#define BUFSIZE 1000
 #define WRITE_TIMEOUT 1000
 
 #define _DEBUG
@@ -279,6 +279,7 @@ int send_response(http_res_t * response, int sd)
 */
 int handle_client(int sd, char* root_dir)
 {	 
+	int err = 0;
 	http_req_t req;
 	http_res_t res;
 	char * req_string = malloc(BUFSIZE);
@@ -295,22 +296,33 @@ int handle_client(int sd, char* root_dir)
     res.location = "";
     res.body = "";
 	
-	//char * req_string = "GET /test/resource/test.jpg HTTP/1.1\r\nRange:Test\r\nContent-Length:0\r\n\r\n";
+
+	//req_string = "GET /test/resource/test.jpg HTTP/1.1\r\nRange:Test\r\nContent-Length:0\r\n\r\n\0";
 	
 	// read the request from the socket
 	// read_from_socket (sd, req_string, BUFSIZE, 1);
-	// ^ this does not work, use own function instead
-
-	int err = parse_request(&req, req_string);
-	if (err < 0)
+	// ^ this does not work, use own function instead:
+	int cc;
+	//char buf[BUFSIZE];
+	
+	while ((cc = read(sd, req_string, BUFSIZE)))
 	{
-		//exit(-1);
+		if (cc < 0)
+		{
+			fprintf(stderr, "[ERR #%d] when reading file!\n", cc); 
+			exit(1);
+		}
+		
+		err = parse_request(&req, req_string);
+		if (err < 0)
+		{
+			//exit(-1);
+		}
+		else
+		{
+			safe_printf("Method: %s\nResource: %s\nRange: %s\n", http_method_list[req.method].name, req.resource, req.range);
+		}
 	}
-	else
-	{
-		safe_printf("Method: %s\nResource: %s\nRange: %s\n", http_method_list[req.method].name, req.resource, req.range);
-	}
-
 	
 	
 	
@@ -334,6 +346,7 @@ Strcpy(<Tatsächlicher Pfad>, root_dir);
 <Tatsächlicher Pfad> = strcat(root_dir, req.resource);
 */
 
+	//safe_printf("hola\r\n");
 	// request parsen -> request 
 	//int err = parse_request(&request, request_str);
 
