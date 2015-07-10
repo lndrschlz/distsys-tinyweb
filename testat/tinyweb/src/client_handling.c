@@ -39,8 +39,18 @@
  
  // GLOBAL REQUEST COUNTER
 static int request_counter = 0;
- 
-int accept_client(int sd /*accepting socket */, int nsd /*listening socket */)
+
+/*
+ * function:		accept_client
+ * purpose:			accept the client and create child process
+ * IN:				int sd - socket descriptor for accepting socket
+ 					int nsd - socket descriptor for listening socket
+ 					char* root_dir - root directory of request source
+ * OUT:				-
+ * globals used:	request_counter - increase for every process
+ * return value:	return 0 if everything is okay
+*/ 
+int accept_client( 	int sd , int nsd , char* root_dir)
 {	
     // increase request_counter to give request a sequence number
     request_counter++;
@@ -48,7 +58,7 @@ int accept_client(int sd /*accepting socket */, int nsd /*listening socket */)
     
     // Fork durchführen, damit ein Kindprozess den Request bearbeiten kann
 	pid_t child_pid;
-	if ((child_pid = fork()))
+	if ( (child_pid = fork()) )
 	{	
 		// Vaterprozess
 		// Listening socket schließen
@@ -87,7 +97,7 @@ int accept_client(int sd /*accepting socket */, int nsd /*listening socket */)
 		time_t end_time;
 		
 		// Client bearbeiten
-		ret = handle_client(nsd);
+		ret = handle_client(nsd, root_dir);
 		
 		// Ressourcenverbrauch berechnen
 		end_time = time(NULL);
@@ -107,6 +117,15 @@ int accept_client(int sd /*accepting socket */, int nsd /*listening socket */)
 	return 0;	
 }
 
+/*
+ * function:		send_response
+ * purpose:			build the resonse and send to client
+ * IN:				http_res_t * response - struct with header line values
+ 					int sd - socket descriptor
+ * OUT:				-
+ * globals used:	-
+ * return value:	return 0 if everything is okay
+*/ 
 int send_response(http_res_t * response, int sd)
 {
 	// error code for socket-write
@@ -250,7 +269,7 @@ int send_response(http_res_t * response, int sd)
 	return 0;
 }
 
-int handle_client(int sd)
+int handle_client(int sd, char* root_dir)
 {	 
 	http_req_t req;
 	http_res_t res;
@@ -258,7 +277,8 @@ int handle_client(int sd)
 	
 	//char * req_string = "GET /test/resource/test.jpg HTTP/1.1\r\nRange:Test\r\nContent-Length:0\r\n\r\n";
 	
-	read_from_socket (sd, req_string, BUFSIZE, 1);
+	// request einlesen (read...)
+	read_from_socket (sd, req_string, BUFSIZE, 1); // does not work
 	int err = parse_request(&req, req_string);
 	if (err < 0)
 	{
@@ -268,10 +288,13 @@ int handle_client(int sd)
 	{
 		safe_printf("Method: %s\nResource: %s\nRange: %s\n", http_method_list[req.method].name, req.resource, req.range);
 	}
-	
-	
-	// request einlesen (read...)
-	
+
+/* proces 
+Char * <Tatsächlicher Pfad> = malloch(BUFSIZE);
+Strcpy(<Tatsächlicher Pfad>, root_dir);
+<Tatsächlicher Pfad> = strcat(root_dir, req.resource);
+*/
+
 	// request parsen -> request 
 	//int err = parse_request(&request, request_str);
 
