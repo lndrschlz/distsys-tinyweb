@@ -332,6 +332,10 @@ int handle_client(int sd, char* root_dir)
 	 *
 	 * use positive logic within the if-statements
 	 *
+	 *
+	 * TODO: 	- check if directory and return location
+	 *			- check if CGI and execute
+	 *
 	 */
 	// check http method if its GET or HEAD
 	if ( req.method == HTTP_METHOD_GET || req.method == HTTP_METHOD_HEAD ) {
