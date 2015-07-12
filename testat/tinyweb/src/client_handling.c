@@ -339,8 +339,8 @@ int handle_client(int sd, char* root_dir)
 		struct stat fstatus;
 		int stat_return = stat(path, &fstatus);
 		if ( stat_return >= 0 && S_ISREG(fstatus.st_mode) ) { 
-			//check if file is accessible
-			if ( fstatus.st_mode == S_IROTH ) { // S_IROTH ?
+			//check if file is accessible (read rights)
+			if ( fstatus.st_mode & S_IROTH ) { 
 				// check cgi...
 				
 				
