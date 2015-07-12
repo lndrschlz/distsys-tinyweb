@@ -26,6 +26,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <socket_io.h>
+#include <sys/stat.h>
 
 #include <tinyweb.h>
 #include <client_handling.h>
@@ -282,7 +283,8 @@ int handle_client(int sd, char* root_dir)
 	int err = 0;
 	http_req_t req;
 	http_res_t res;
-	char * req_string = malloc(BUFSIZE);
+	//char* req_string = malloc(BUFSIZE);
+	char* path = "web/index.html"; 
 	
 	// initialize response
 	res.status = HTTP_STATUS_INTERNAL_SERVER_ERROR;
@@ -302,10 +304,10 @@ int handle_client(int sd, char* root_dir)
 	// read the request from the socket
 	// read_from_socket (sd, req_string, BUFSIZE, 1);
 	// ^ this does not work, use own function instead:
-	int cc;
+	//int cc;
 	//char buf[BUFSIZE];
 	
-	while ((cc = read(sd, req_string, BUFSIZE)))
+/*	while ((cc = read(sd, req_string, BUFSIZE)))
 	{
 		if (cc < 0)
 		{
@@ -323,22 +325,54 @@ int handle_client(int sd, char* root_dir)
 			safe_printf("Method: %s\nResource: %s\nRange: %s\n", http_method_list[req.method].name, req.resource, req.range);
 		}
 	}
+*/	
 	
 	
-	
-	// request handling ----------------------------------------------------------
-	
-	// check http method if not GET or HEAD
-	if ( req.method != HTTP_METHOD_GET && req.method != HTTP_METHOD_HEAD ) {
+	/* request handling ----------------------------------------------------------
+	 *
+	 * use positive logic within the if-statements
+	 *
+	 */
+	// check http method if its GET or HEAD
+	if ( req.method == HTTP_METHOD_GET || req.method == HTTP_METHOD_HEAD ) {
+		// check if file exists
+		struct stat fstatus;
+		int stat_return = stat(path, &fstatus);
+		if ( stat_return >= 0 && S_ISREG(fstatus.st_mode) ) { 
+			//check if file is accessible
+			if ( fstatus.st_mode == S_IROTH ) { // S_IROTH ?
+				// check cgi...
+				
+				
+			}else{
+				// resource is not accessible - return 403 - forbidden
+				res.status = HTTP_STATUS_FORBIDDEN;
+				// directly write status to socket and exit
+				err = send_response(&res, sd);
+				if ( err < 0 ) {
+					safe_printf("Failed to send the response (403): %d\n", err);
+				}
+			} /* endif file accessible */
+		}else{
+			// resource doesn't exist - return 404 - not found
+			res.status = HTTP_STATUS_NOT_FOUND;
+			// directly write status to socket and exit
+			err = send_response(&res, sd);
+			if ( err < 0 ) {
+				safe_printf("Failed to send the response (404): %d\n", err);
+			}
+			return 0;
+		}/* endif file exists */
+	}else{
 		// return status 501 - not implemented
 		res.status = HTTP_STATUS_NOT_IMPLEMENTED;
 		// directly write status to socket and exit
 		err = send_response(&res, sd);
 		if ( err < 0 ) {
-			safe_printf("Failed to send the response: %d\n", err);
+			safe_printf("Failed to send the response (501): %d\n", err);
 		}
 		return 0;
-	}
+	} /* endif GET HEAD */
 
 /* proces 
 Char * <Tatsächlicher Pfad> = malloch(BUFSIZE);
