@@ -1,5 +1,4 @@
-# petulant-octo-dangerzone
-DHBW Ravensburg: Verteilte Systeme (TIT12) - Gruppe Schulz, Polkehn, Reutebuch
+# distsys-tinyweb
+DHBW Ravensburg: Verteilte Systeme (TIT12)
 
-## Vorgehen ##
-Ein Rahmenprogramm für den Server ist das Programm _echos_ mit den Quelltextdateien _echos.c_ und _handleclient.c_
+This repository contains a minimalistic webserver, that is able to accept and handle http requests. The http response is generated dynamically and send with the proper http status.
